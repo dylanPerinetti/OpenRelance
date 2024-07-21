@@ -132,10 +132,9 @@ La base de données **OpenRelance** est conçue pour gérer les informations li�
 - Assurez-vous de remplacer `'localhost'` par le nom d'hôte approprié si les utilisateurs se connectent à partir d'un autre hôte.
 - Remplacez les mots de passe par ceux que vous souhaitez utiliser.
 
-## Contributeurs
+## Contributeur
 
-- [Dylan PERINETTI]
-- [https://github.com/dylanPerinetti/OpenRelance](URL)
+- Dylan PERINETTI ([https://github.com/dylanPerinetti/](URL))
 
 ## Liens utiles
 
