@@ -6,6 +6,8 @@ La base de données **OpenRelance** est conçue pour gérer les informations li�
 
 ## Structure de la base de données
 
+![Diagramme de la base de données](https://github.com/dylanPerinetti/OpenRelance/raw/main/DataBase/ImageMCD.png)
+
 ### Tables
 
 1. **user_open_relance**
