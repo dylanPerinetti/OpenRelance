@@ -2,7 +2,7 @@
 
 ## Description
 
-La base de données **OpenRelance** est conçue pour gérer les informations liées aux utilisateurs, clients, factures, commentaires et contacts clients d'une plateforme de relance de paiements.
+La base de données **OpenRelance** est conçue pour gérer les informations liées aux utilisateurs, clients, factures, commentaires et contacts clients de la plateforme de relance de paiements [OpenRelance](https://github.com/dylanPerinetti/OpenRelance).
 
 ## Structure de la base de données
 
@@ -14,33 +14,46 @@ La base de données **OpenRelance** est conçue pour gérer les informations li�
    - `prenom_user_open_relance` : Prénom de l'utilisateur.
    - `initial_user_open_relance` : Initiales de l'utilisateur (2 caractères).
    - `type_de_profil` : Type de profil de l'utilisateur (représenté par un entier).
+   - `email_user_open_relance` : Adresse email de l'utilisateur.
    - `mot_de_passe` : Mot de passe de l'utilisateur.
 
 2. **clients**
    - `id` : Identifiant unique du client (auto-incrémenté).
    - `nom_client` : Nom du client.
    - `numeros_parma` : Numéro unique du client.
+   - `id_user_open_relance` : Identifiant de l'utilisateur associé (clé étrangère vers `user_open_relance`).
 
-3. **factures**
-   - `id` : Identifiant unique de la facture (auto-incrémenté).
-   - `numeros_de_facture` : Numéro de la facture (contenant des lettres et des chiffres).
-   - `date_echeance_payment` : Date d'échéance du paiement.
-   - `montant_facture` : Montant de la facture.
-   - `id_entreprise` : Identifiant de l'entreprise cliente (clé étrangère vers `clients`).
-
-4. **commentaires**
-   - `id` : Identifiant unique du commentaire (auto-incrémenté).
-   - `date_commentaire` : Date du commentaire (générée automatiquement).
-   - `message_commentaire` : Contenu du commentaire.
-   - `id_factures` : Identifiant de la facture associée (clé étrangère vers `factures`).
-
-5. **contactes_clients**
+3. **contactes_clients**
    - `id` : Identifiant unique du contact client (auto-incrémenté).
    - `fonction_contactes_clients` : Fonction du contact client.
    - `nom_contactes_clients` : Nom du contact client.
    - `mail_contactes_clients` : Adresse email du contact client.
    - `telphone_contactes_clients` : Numéro de téléphone du contact client.
-   - `id_entreprise` : Identifiant de l'entreprise cliente (clé étrangère vers `clients`).
+   - `id_clients` : Identifiant du client associé (clé étrangère vers `clients`).
+
+4. **relance_client**
+   - `id` : Identifiant unique de la relance client (auto-incrémenté).
+   - `type_relance` : Type de relance (par ex: mail, appel, courrier 1, courrier 2, recommandé, etc.).
+   - `date_relance` : Date de la relance.
+   - `id_contact_client` : Identifiant du contact client (clé étrangère vers `contactes_clients`).
+   - `id_user_open_relance` : Identifiant de l'utilisateur ayant initié la relance (clé étrangère vers `user_open_relance`).
+
+5. **factures**
+   - `id` : Identifiant unique de la facture (auto-incrémenté).
+   - `numeros_de_facture` : Numéro de la facture (contenant des lettres et des chiffres).
+   - `date_echeance_payment` : Date d'échéance du paiement.
+   - `montant_facture` : Montant de la facture.
+   - `montant_reste_a_payer` : Montant restant à payer sur la facture.
+   - `id_clients` : Identifiant du client associé (clé étrangère vers `clients`).
+   - `id_relance_client` : Identifiant de la relance client associée (clé étrangère vers `relance_client`).
+   - `id_user_open_relance` : Identifiant de l'utilisateur associé (clé étrangère vers `user_open_relance`).
+
+6. **commentaires**
+   - `id` : Identifiant unique du commentaire (auto-incrémenté).
+   - `date_commentaire` : Date du commentaire (générée automatiquement).
+   - `message_commentaire` : Contenu du commentaire.
+   - `id_factures` : Identifiant de la facture associée (clé étrangère vers `factures`).
+   - `id_user_open_relance` : Identifiant de l'utilisateur ayant fait le commentaire (clé étrangère vers `user_open_relance`).
 
 ## Utilisateurs de la base de données
 
@@ -69,6 +82,7 @@ La base de données **OpenRelance** est conçue pour gérer les informations li�
     CREATE DATABASE OpenRelance;
     USE OpenRelance;
     ```
+
 2. Créez les tables en exécutant le script SQL suivant :
     ```sql
     CREATE TABLE user_open_relance (
@@ -77,22 +91,50 @@ La base de données **OpenRelance** est conçue pour gérer les informations li�
         prenom_user_open_relance VARCHAR(255) NOT NULL,
         initial_user_open_relance CHAR(2) NOT NULL,
         type_de_profil INT NOT NULL,
+        email_user_open_relance VARCHAR(255) NOT NULL UNIQUE,
         mot_de_passe VARCHAR(255) NOT NULL
     );
 
     CREATE TABLE clients (
         id INT AUTO_INCREMENT PRIMARY KEY,
         nom_client VARCHAR(255) NOT NULL,
-        numeros_parma VARCHAR(255) NOT NULL
+        numeros_parma VARCHAR(255) NOT NULL,
+        id_user_open_relance INT,
+        FOREIGN KEY (id_user_open_relance) REFERENCES user_open_relance(id)
+    );
+
+    CREATE TABLE contactes_clients (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        fonction_contactes_clients VARCHAR(255) NOT NULL,
+        nom_contactes_clients VARCHAR(255) NOT NULL,
+        mail_contactes_clients VARCHAR(255) NOT NULL UNIQUE,
+        telphone_contactes_clients VARCHAR(20) NOT NULL,
+        id_clients INT,
+        FOREIGN KEY (id_clients) REFERENCES clients(id)
+    );
+
+    CREATE TABLE relance_client (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        type_relance VARCHAR(255) NOT NULL, -- le type de relance (par ex: mail, appel, courrier 1, courrier 2, recommandé ...)
+        date_relance DATE NOT NULL, -- date de la relance
+        id_contact_client INT,
+        id_user_open_relance INT,
+        FOREIGN KEY (id_contact_client) REFERENCES contactes_clients(id),
+        FOREIGN KEY (id_user_open_relance) REFERENCES user_open_relance(id)
     );
 
     CREATE TABLE factures (
         id INT AUTO_INCREMENT PRIMARY KEY,
-        numeros_de_facture VARCHAR(255) NOT NULL,
+        numeros_de_facture VARCHAR(255) NOT NULL UNIQUE,
         date_echeance_payment DATE NOT NULL,
         montant_facture DECIMAL(10, 2) NOT NULL,
-        id_entreprise INT,
-        FOREIGN KEY (id_entreprise) REFERENCES clients(id)
+        montant_reste_a_payer DECIMAL(10, 2) NOT NULL,
+        id_clients INT,
+        id_relance_client INT,
+        id_user_open_relance INT,
+        FOREIGN KEY (id_clients) REFERENCES clients(id),
+        FOREIGN KEY (id_relance_client) REFERENCES relance_client(id),
+        FOREIGN KEY (id_user_open_relance) REFERENCES user_open_relance(id)
     );
 
     CREATE TABLE commentaires (
@@ -100,19 +142,12 @@ La base de données **OpenRelance** est conçue pour gérer les informations li�
         date_commentaire TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         message_commentaire TEXT NOT NULL,
         id_factures INT,
-        FOREIGN KEY (id_factures) REFERENCES factures(id)
-    );
-
-    CREATE TABLE contactes_clients (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        fonction_contactes_clients VARCHAR(255) NOT NULL,
-        nom_contactes_clients VARCHAR(255) NOT NULL,
-        mail_contactes_clients VARCHAR(255) NOT NULL,
-        telphone_contactes_clients VARCHAR(20) NOT NULL,
-        id_entreprise INT,
-        FOREIGN KEY (id_entreprise) REFERENCES clients(id)
+        id_user_open_relance INT,
+        FOREIGN KEY (id_factures) REFERENCES factures(id),
+        FOREIGN KEY (id_user_open_relance) REFERENCES user_open_relance(id)
     );
     ```
+
 3. Créez les utilisateurs de la base de données et attribuez les privilèges en exécutant le script SQL suivant :
     ```sql
     CREATE USER 'user_add'@'localhost' IDENTIFIED BY 'password_add';
@@ -134,7 +169,7 @@ La base de données **OpenRelance** est conçue pour gérer les informations li�
 
 ## Contributeur
 
-- Dylan PERINETTI ([https://github.com/dylanPerinetti/](URL))
+- [Dylan PERINETTI] (https://github.com/dylanPerinetti/)
 
 ## Liens utiles
 
