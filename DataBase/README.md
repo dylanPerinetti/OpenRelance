@@ -171,7 +171,7 @@ La base de données **OpenRelance** est conçue pour gérer les informations li�
 
 ## Contributeur
 
-- [Dylan PERINETTI] (https://github.com/dylanPerinetti/)
+- [Dylan PERINETTI](https://github.com/dylanPerinetti/)
 
 ## Liens utiles
 
