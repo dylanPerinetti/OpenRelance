@@ -1,0 +1,138 @@
+/* widget.css */
+.widget-content {
+    padding: 20px;
+    background-color: var(--input-background-color); /* Slightly different from the main background */
+    box-shadow: 0 1px 3px var(--shadow-color);
+    border: 1px solid var(--input-border-color); /* Subtle border for better visibility */
+    border-radius: 10px;
+    margin: 20px auto;
+    max-width: 80%;
+    transition: box-shadow 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+
+.widget-content:hover {
+    box-shadow: 0 4px 8px var(--shadow-color);
+    transform: translateY(-2px);
+}
+
+.clients-table, .contacts-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 16px;
+    text-align: left;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px var(--shadow-color);
+}
+
+.clients-table th, .clients-table td, .contacts-table th, .contacts-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid var(--input-border-color); /* Lighter border color */
+}
+
+.clients-table th, .contacts-table th {
+    background-color: var(--input-focus-background-color); /* Slight contrast for header */
+    color: var(--text-color);
+    font-weight: normal;
+    text-transform: none;
+}
+
+.clients-table tr:nth-child(even), .contacts-table tr:nth-child(even) {
+    background-color: var(--input-background-color); /* Alternating row colors for better distinction */
+}
+
+.clients-table tr:nth-child(odd), .contacts-table tr:nth-child(odd) {
+    background-color: var(--background-color); /* Alternating row colors for better distinction */
+}
+
+.clients-table tr:hover, .contacts-table tr:hover {
+    background-color: var(--input-focus-background-color);
+}
+
+.clients-table td, .contacts-table td {
+    color: var(--text-color);
+    position: relative;
+}
+
+.inline-input {
+    background: none;
+    border: none;
+    border-bottom: 1px solid var(--input-border-color);
+    outline: none;
+    width: 100%;
+    padding: 6px 10px;
+    font-size: 16px;
+    box-sizing: border-box;
+    transition: border-bottom-color 0.3s;
+    color: var(--text-color); /* Ensure text color is visible */
+}
+
+.inline-input:focus {
+    border-bottom-color: var(--primary-color);
+}
+
+.inline-input[readonly] {
+    color: var(--text-color);
+    background: none;
+    cursor: default;
+}
+
+.inline-select {
+    background: none;
+    border: 1px solid var(--input-border-color);
+    outline: none;
+    width: 100%;
+    padding: 6px 10px;
+    font-size: 16px;
+    box-sizing: border-box;
+    border-radius: 5px;
+    color: var(--text-color); /* Ensure text color is visible */
+    background-color: var(--input-background-color); /* Match input background color */
+}
+
+.inline-select:focus {
+    border-color: var(--primary-color);
+}
+
+h1 {
+    font-size: 24px;
+    color: var(--text-color);
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .clients-table thead, .contacts-table thead {
+        display: none;
+    }
+
+    .clients-table tr, .contacts-table tr {
+        display: block;
+        margin-bottom: 10px;
+    }
+
+    .clients-table td, .contacts-table td {
+        display: block;
+        text-align: right;
+        padding-left: 50%;
+        position: relative;
+    }
+
+    .clients-table td::before, .contacts-table td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 0;
+        width: 50%;
+        padding-left: 15px;
+        font-weight: bold;
+        text-align: left;
+    }
+}
+
+.fas.fa-pencil-alt {
+    font-size: 16px;
+    color: var(--primary-color); /* More visible color */
+    margin-left: 5px;
+    vertical-align: middle; /* Aligns the icon with the text */
+}
