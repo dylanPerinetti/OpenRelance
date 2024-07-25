@@ -28,7 +28,7 @@ La base de données **OpenRelance** est conçue pour gérer les informations li�
 3. **contactes_clients**
    - `id` : Identifiant unique du contact client (auto-incrémenté).
    - `fonction_contactes_clients` : Fonction du contact client.
-   - `nom_contactes_clients` : Nom du contact client.
+   - `nom_contactes_clients` : Nom du contact client (peut être NULL).
    - `mail_contactes_clients` : Adresse email du contact client.
    - `telphone_contactes_clients` : Numéro de téléphone du contact client.
    - `id_clients` : Identifiant du client associé (clé étrangère vers `clients`).
@@ -47,10 +47,14 @@ La base de données **OpenRelance** est conçue pour gérer les informations li�
    - `montant_facture` : Montant de la facture.
    - `montant_reste_a_payer` : Montant restant à payer sur la facture.
    - `id_clients` : Identifiant du client associé (clé étrangère vers `clients`).
-   - `id_relance_client` : Identifiant de la relance client associée (clé étrangère vers `relance_client`).
    - `id_user_open_relance` : Identifiant de l'utilisateur associé (clé étrangère vers `user_open_relance`).
 
-6. **commentaires**
+6. **relance_facture**
+   - `id_relance_client` : Identifiant de la relance client (clé étrangère vers `relance_client`).
+   - `id_facture` : Identifiant de la facture (clé étrangère vers `factures`).
+   - **Clé primaire composée** : (`id_relance_client`, `id_facture`).
+
+7. **commentaires**
    - `id` : Identifiant unique du commentaire (auto-incrémenté).
    - `date_commentaire` : Date du commentaire (générée automatiquement).
    - `message_commentaire` : Contenu du commentaire.
@@ -108,8 +112,8 @@ La base de données **OpenRelance** est conçue pour gérer les informations li�
     CREATE TABLE contactes_clients (
         id INT AUTO_INCREMENT PRIMARY KEY,
         fonction_contactes_clients VARCHAR(255) NOT NULL,
-        nom_contactes_clients VARCHAR(255) NOT NULL,
-        mail_contactes_clients VARCHAR(255) NOT NULL UNIQUE,
+        nom_contactes_clients VARCHAR(255),
+        mail_contactes_clients VARCHAR(255) NOT NULL,
         telphone_contactes_clients VARCHAR(20) NOT NULL,
         id_clients INT,
         FOREIGN KEY (id_clients) REFERENCES clients(id)
@@ -117,8 +121,8 @@ La base de données **OpenRelance** est conçue pour gérer les informations li�
 
     CREATE TABLE relance_client (
         id INT AUTO_INCREMENT PRIMARY KEY,
-        type_relance VARCHAR(255) NOT NULL, -- le type de relance (par ex: mail, appel, courrier 1, courrier 2, recommandé ...)
-        date_relance DATE NOT NULL, -- date de la relance
+        type_relance VARCHAR(255) NOT NULL,
+        date_relance DATE NOT NULL,
         id_contact_client INT,
         id_user_open_relance INT,
         FOREIGN KEY (id_contact_client) REFERENCES contactes_clients(id),
@@ -132,11 +136,17 @@ La base de données **OpenRelance** est conçue pour gérer les informations li�
         montant_facture DECIMAL(10, 2) NOT NULL,
         montant_reste_a_payer DECIMAL(10, 2) NOT NULL,
         id_clients INT,
-        id_relance_client INT,
         id_user_open_relance INT,
         FOREIGN KEY (id_clients) REFERENCES clients(id),
-        FOREIGN KEY (id_relance_client) REFERENCES relance_client(id),
         FOREIGN KEY (id_user_open_relance) REFERENCES user_open_relance(id)
+    );
+
+    CREATE TABLE relance_facture (
+        id_relance_client INT,
+        id_facture INT,
+        PRIMARY KEY (id_relance_client, id_facture),
+        FOREIGN KEY (id_relance_client) REFERENCES relance_client(id),
+        FOREIGN KEY (id_facture) REFERENCES factures(id)
     );
 
     CREATE TABLE commentaires (
