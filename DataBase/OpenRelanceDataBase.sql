@@ -28,8 +28,8 @@ CREATE TABLE clients (
 CREATE TABLE contactes_clients (
     id INT AUTO_INCREMENT PRIMARY KEY,
     fonction_contactes_clients VARCHAR(255) NOT NULL,
-    nom_contactes_clients VARCHAR(255) NOT NULL,
-    mail_contactes_clients VARCHAR(255) NOT NULL UNIQUE,
+    nom_contactes_clients VARCHAR(255), -- le nom peut être NULL
+    mail_contactes_clients VARCHAR(255) NOT NULL,
     telphone_contactes_clients VARCHAR(20) NOT NULL,
     id_clients INT,
     FOREIGN KEY (id_clients) REFERENCES clients(id)
@@ -54,11 +54,18 @@ CREATE TABLE factures (
     montant_facture DECIMAL(10, 2) NOT NULL,
     montant_reste_a_payer DECIMAL(10, 2) NOT NULL,
     id_clients INT,
-    id_relance_client INT,
     id_user_open_relance INT,
     FOREIGN KEY (id_clients) REFERENCES clients(id),
-    FOREIGN KEY (id_relance_client) REFERENCES relance_client(id),
     FOREIGN KEY (id_user_open_relance) REFERENCES user_open_relance(id)
+);
+
+-- Table de liaison entre relance_client et factures
+CREATE TABLE relance_facture (
+    id_relance_client INT,
+    id_facture INT,
+    PRIMARY KEY (id_relance_client, id_facture),
+    FOREIGN KEY (id_relance_client) REFERENCES relance_client(id),
+    FOREIGN KEY (id_facture) REFERENCES factures(id)
 );
 
 -- Création de la table commentaires
