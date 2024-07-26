@@ -4,7 +4,7 @@ CREATE DATABASE OpenRelance;
 -- Utilisation de la base de données
 USE OpenRelance;
 
--- Création de la table user_open_relance
+-- Création des tables
 CREATE TABLE user_open_relance (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nom_user_open_relance VARCHAR(255) NOT NULL,
@@ -15,7 +15,6 @@ CREATE TABLE user_open_relance (
     mot_de_passe VARCHAR(255) NOT NULL
 );
 
--- Création de la table clients
 CREATE TABLE clients (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nom_client VARCHAR(255) NOT NULL,
@@ -24,29 +23,26 @@ CREATE TABLE clients (
     FOREIGN KEY (id_user_open_relance) REFERENCES user_open_relance(id)
 );
 
--- Création de la table contactes_clients
 CREATE TABLE contactes_clients (
     id INT AUTO_INCREMENT PRIMARY KEY,
     fonction_contactes_clients VARCHAR(255) NOT NULL,
-    nom_contactes_clients VARCHAR(255), -- le nom peut être NULL
+    nom_contactes_clients VARCHAR(255),
     mail_contactes_clients VARCHAR(255) NOT NULL,
     telphone_contactes_clients VARCHAR(20) NOT NULL,
     id_clients INT,
     FOREIGN KEY (id_clients) REFERENCES clients(id)
 );
 
--- Création de la table relance_client
 CREATE TABLE relance_client (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    type_relance VARCHAR(255) NOT NULL, -- le type de relance (par ex: mail, appel, courrier 1, courrier 2, recommandé ...)
-    date_relance DATE NOT NULL, -- date de la relance
+    type_relance VARCHAR(255) NOT NULL,
+    date_relance DATE NOT NULL,
     id_contact_client INT,
     id_user_open_relance INT,
     FOREIGN KEY (id_contact_client) REFERENCES contactes_clients(id),
     FOREIGN KEY (id_user_open_relance) REFERENCES user_open_relance(id)
 );
 
--- Création de la table factures
 CREATE TABLE factures (
     id INT AUTO_INCREMENT PRIMARY KEY,
     numeros_de_facture VARCHAR(255) NOT NULL UNIQUE,
@@ -59,7 +55,6 @@ CREATE TABLE factures (
     FOREIGN KEY (id_user_open_relance) REFERENCES user_open_relance(id)
 );
 
--- Table de liaison entre relance_client et factures
 CREATE TABLE relance_facture (
     id_relance_client INT,
     id_facture INT,
@@ -68,13 +63,18 @@ CREATE TABLE relance_facture (
     FOREIGN KEY (id_facture) REFERENCES factures(id)
 );
 
--- Création de la table commentaires
 CREATE TABLE commentaires (
     id INT AUTO_INCREMENT PRIMARY KEY,
     date_commentaire TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     message_commentaire TEXT NOT NULL,
-    id_factures INT,
     id_user_open_relance INT,
-    FOREIGN KEY (id_factures) REFERENCES factures(id),
     FOREIGN KEY (id_user_open_relance) REFERENCES user_open_relance(id)
+);
+
+CREATE TABLE commentaires_factures (
+    id_commentaire INT,
+    id_facture INT,
+    PRIMARY KEY (id_commentaire, id_facture),
+    FOREIGN KEY (id_commentaire) REFERENCES commentaires(id),
+    FOREIGN KEY (id_facture) REFERENCES factures(id)
 );
