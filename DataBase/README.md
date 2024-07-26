@@ -58,8 +58,12 @@ La base de données **OpenRelance** est conçue pour gérer les informations li�
    - `id` : Identifiant unique du commentaire (auto-incrémenté).
    - `date_commentaire` : Date du commentaire (générée automatiquement).
    - `message_commentaire` : Contenu du commentaire.
-   - `id_factures` : Identifiant de la facture associée (clé étrangère vers `factures`).
    - `id_user_open_relance` : Identifiant de l'utilisateur ayant fait le commentaire (clé étrangère vers `user_open_relance`).
+
+8. **commentaires_factures**
+   - `id_commentaire` : Identifiant du commentaire (clé étrangère vers `commentaires`).
+   - `id_facture` : Identifiant de la facture (clé étrangère vers `factures`).
+   - **Clé primaire composée** : (`id_commentaire`, `id_facture`).
 
 ## Utilisateurs de la base de données
 
@@ -153,10 +157,16 @@ La base de données **OpenRelance** est conçue pour gérer les informations li�
         id INT AUTO_INCREMENT PRIMARY KEY,
         date_commentaire TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         message_commentaire TEXT NOT NULL,
-        id_factures INT,
         id_user_open_relance INT,
-        FOREIGN KEY (id_factures) REFERENCES factures(id),
         FOREIGN KEY (id_user_open_relance) REFERENCES user_open_relance(id)
+    );
+
+    CREATE TABLE commentaires_factures (
+        id_commentaire INT,
+        id_facture INT,
+        PRIMARY KEY (id_commentaire, id_facture),
+        FOREIGN KEY (id_commentaire) REFERENCES commentaires(id),
+        FOREIGN KEY (id_facture) REFERENCES factures(id)
     );
     ```
 
