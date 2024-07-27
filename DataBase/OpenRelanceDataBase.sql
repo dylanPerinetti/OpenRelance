@@ -27,8 +27,9 @@ CREATE TABLE contactes_clients (
     id INT AUTO_INCREMENT PRIMARY KEY,
     fonction_contactes_clients VARCHAR(255) NOT NULL,
     nom_contactes_clients VARCHAR(255),
-    mail_contactes_clients VARCHAR(255) NOT NULL,
-    telphone_contactes_clients VARCHAR(20) NOT NULL,
+    mail_contactes_clients VARCHAR(255),
+    telphone_contactes_clients VARCHAR(20),
+    commentaire_contactes_clients TEXT,
     id_clients INT,
     FOREIGN KEY (id_clients) REFERENCES clients(id)
 );
