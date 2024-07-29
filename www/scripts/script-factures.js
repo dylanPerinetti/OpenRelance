@@ -1,146 +1,290 @@
 document.addEventListener('DOMContentLoaded', function() {
-    fetch('action/get-factures.php')
-    .then(response => response.json())
-    .then(data => {
+    let facturesData = [];
+    let selectedFactures = new Set();
+    let currentPage = 1;
+    let itemsPerPage = parseInt(document.getElementById('items-per-page').value, 10);
+    let selectionMode = false;
+
+    const fetchFactures = () => {
+        fetch('action/get-factures.php')
+            .then(response => response.json())
+            .then(data => {
+                facturesData = data;
+                applyFiltersAndRender();
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+                showAlert('Erreur lors de la récupération des données', 'danger');
+            });
+    };
+
+    const applyFiltersAndRender = () => {
+        const searchValue = document.getElementById('search').value.toLowerCase();
+        const statusFilter = document.getElementById('status-filter').value;
+        itemsPerPage = parseInt(document.getElementById('items-per-page').value, 10);
+
+        let filteredData = facturesData;
+
+        if (searchValue) {
+            filteredData = filteredData.filter(facture => {
+                return Object.values(facture).some(value => 
+                    value.toString().toLowerCase().includes(searchValue)
+                );
+            });
+        }
+
+        if (statusFilter === 'non-paye') {
+            filteredData = filteredData.filter(facture => facture.montant_reste_a_payer > 0);
+        } else if (statusFilter === 'paye') {
+            filteredData = filteredData.filter(facture => facture.montant_reste_a_payer == 0);
+        }
+
+        renderFactures(filteredData);
+    };
+
+    const renderFactures = (data) => {
         const tbody = document.getElementById('factures-tbody');
-        tbody.innerHTML = ''; // Clear the loading message
-        if (data.length > 0) {
-            data.forEach(facture => {
-                fetch('action/get-user-initial.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ id_user: facture.id_user_open_relance })
-                })
-                .then(response => response.json())
-                .then(userData => {
-                    const statusColor = facture.montant_reste_a_payer == 0 ? 'green' : 'orange';
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
+        tbody.innerHTML = '';
+        
+        const paginatedData = data.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+        
+        if (paginatedData.length > 0) {
+            paginatedData.forEach(facture => {
+                const statusColor = facture.montant_reste_a_payer == 0 ? 'green' : 'orange';
+                const row = document.createElement('tr');
+                row.classList.add('facture-row');
+                row.dataset.href = `facture.php?id=${facture.id}`;
+                row.dataset.client = facture.id_clients;
+                row.innerHTML = `
+                    <td style="display: ${selectionMode ? 'table-cell' : 'none'};"><input type="checkbox" class="select-facture" data-id="${facture.id}" data-client="${facture.id_clients}"></td>
                     <td><span style="color: ${statusColor};">&#9679;</span></td>
-                    <td>
-                        <a href='facture.php?id=${facture.id}'>${facture.numeros_de_facture}</a>
-                    </td>
-                    <td>${facture.date_echeance_payment}</td>
-                    <td>${facture.montant_facture}</td>
-                    <td>${facture.montant_reste_a_payer}</td>
+                    <td>${facture.numeros_parma}</td>
                     <td>${facture.nom_client}</td>
-                    <td>${userData.initial_user_open_relance}</td>
-                    `;
-                    tbody.appendChild(row);
-                });
+                    <td>${facture.numeros_de_facture}</td>
+                    <td>${formatDate(facture.date_emission_facture)}</td>
+                    <td>${formatDate(facture.date_echeance_payment)}</td>
+                    <td style="text-align:right;">${formatMontant(facture.montant_facture)}€</td>
+                `;
+                tbody.appendChild(row);
             });
         } else {
-            tbody.innerHTML = '<tr><td colspan="7">Aucune facture trouvée</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="9">Aucune facture trouvée</td></tr>';
         }
-    })
-    .catch(error => {
-        console.error('Error fetching data:', error);
-        const tbody = document.getElementById('factures-tbody');
-        tbody.innerHTML = '<tr><td colspan="7">Erreur lors de la récupération des données</td></tr>';
+
+        renderPagination(data.length);
+    };
+
+    const formatMontant = (montant) => {
+        return Number(montant).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    };
+
+    const formatDate = (dateStr) => {
+        const date = new Date(dateStr);
+        if (!isNaN(date)) {
+            return date.toLocaleDateString('fr-FR');
+        }
+        return 'Date invalide';
+    };
+
+    const renderPagination = (totalItems) => {
+        const totalPages = Math.ceil(totalItems / itemsPerPage);
+        
+        const paginationTop = document.getElementById('pagination-top');
+        const paginationBottom = document.getElementById('pagination-bottom');
+        
+        paginationTop.innerHTML = '';
+        paginationBottom.innerHTML = '';
+
+        const createPageButton = (page) => {
+            const pageButton = document.createElement('button');
+            pageButton.innerText = page;
+            pageButton.classList.add('page-button');
+            pageButton.dataset.page = page;
+
+            if (page === currentPage) {
+                pageButton.classList.add('active');
+            }
+
+            pageButton.addEventListener('click', () => {
+                currentPage = page;
+                applyFiltersAndRender();
+            });
+
+            return pageButton;
+        };
+
+        if (totalPages > 1) {
+            const addEllipsis = () => {
+                const ellipsis = document.createElement('span');
+                ellipsis.innerText = '...';
+                return ellipsis;
+            };
+
+            paginationTop.appendChild(createPageButton(1));
+            paginationBottom.appendChild(createPageButton(1));
+
+            if (currentPage > 4) {
+                paginationTop.appendChild(addEllipsis());
+                paginationBottom.appendChild(addEllipsis());
+            }
+
+            for (let i = Math.max(2, currentPage - 2); i <= Math.min(totalPages - 1, currentPage + 2); i++) {
+                paginationTop.appendChild(createPageButton(i));
+                paginationBottom.appendChild(createPageButton(i));
+            }
+
+            if (currentPage < totalPages - 3) {
+                paginationTop.appendChild(addEllipsis());
+                paginationBottom.appendChild(addEllipsis());
+            }
+
+            if (totalPages > 1) {
+                paginationTop.appendChild(createPageButton(totalPages));
+                paginationBottom.appendChild(createPageButton(totalPages));
+            }
+        }
+    };
+
+    document.getElementById('search').addEventListener('input', applyFiltersAndRender);
+    document.getElementById('status-filter').addEventListener('change', applyFiltersAndRender);
+    document.getElementById('items-per-page').addEventListener('change', () => {
+        currentPage = 1; // Reset to first page when items per page change
+        applyFiltersAndRender();
     });
 
-    function autocompleteClient() {
-        $("#new-facture-client").autocomplete({
-            source: function(request, response) {
-                $.ajax({
-                    url: 'action/search-clients.php',
-                    type: 'POST',
-                    dataType: 'json',
-                    data: JSON.stringify({ search: request.term }),
-                    contentType: 'application/json',
-                    success: function(data) {
-                        response($.map(data, function(item) {
-                            return {
-                                label: item.nom_client,
-                                value: item.nom_client,
-                                id: item.id
-                            };
-                        }));
-                    }
-                });
-            },
-            select: function(event, ui) {
-                $('#new-facture-client').data('selected-id', ui.item.id);
+    document.getElementById('factures-tbody').addEventListener('click', function(event) {
+        if (!selectionMode) {
+            const tr = event.target.closest('tr');
+            if (tr && tr.classList.contains('facture-row')) {
+                window.location.href = tr.dataset.href;
+            }
+        }
+    });
+
+    document.getElementById('select-all').addEventListener('change', function() {
+        const checkboxes = document.querySelectorAll('.select-facture');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = this.checked;
+            if (this.checked) {
+                selectedFactures.add(checkbox.dataset.id);
+            } else {
+                selectedFactures.delete(checkbox.dataset.id);
             }
         });
-    }
-
-    autocompleteClient();
-
-    document.getElementById('new-facture-amount').addEventListener('input', function(event) {
-        this.value = this.value.replace(/[^\d.]/g, '');
+        validateSelectedFactures();
     });
 
-    document.getElementById('new-facture-remaining').addEventListener('input', function(event) {
-        this.value = this.value.replace(/[^\d.]/g, '');
-    });
-
-    document.addEventListener('keydown', function(event) {
-        if (event.key === 'Enter') {
-            const factureNumber = document.getElementById('new-facture-number').value;
-            const factureDate = document.getElementById('new-facture-date').value;
-            const factureAmount = document.getElementById('new-facture-amount').value;
-            const factureRemaining = document.getElementById('new-facture-remaining').value;
-            const factureClient = $('#new-facture-client').data('selected-id');
-
-            if (factureNumber && factureDate && factureAmount && factureRemaining && factureClient) {
-                addFacture(factureNumber, factureDate, factureAmount, factureRemaining, factureClient);
+    document.getElementById('factures-tbody').addEventListener('change', function(event) {
+        if (event.target.classList.contains('select-facture')) {
+            const factureId = event.target.dataset.id;
+            const clientId = event.target.dataset.client;
+            if (event.target.checked) {
+                selectedFactures.add(factureId);
             } else {
-                alert('Veuillez remplir tous les champs.');
+                selectedFactures.delete(factureId);
             }
+            validateSelectedFactures();
         }
     });
 
-    function addFacture(factureNumber, factureDate, factureAmount, factureRemaining, factureClient) {
-        fetch('action/add-facture.php', {
+    const validateSelectedFactures = () => {
+        const clientIds = Array.from(selectedFactures).map(id => {
+            const checkbox = document.querySelector(`.select-facture[data-id="${id}"]`);
+            return checkbox ? checkbox.dataset.client : null;
+        }).filter(id => id !== null);
+
+        const uniqueClientIds = [...new Set(clientIds)];
+        if (uniqueClientIds.length > 1) {
+            showAlert("Vous ne pouvez sélectionner que des factures du même client pour ajouter un commentaire groupé.", 'warning');
+            selectedFactures.clear();
+            document.querySelectorAll('.select-facture').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+        }
+    };
+
+    const commentModal = document.getElementById('comment-modal');
+    const commentBtn = document.getElementById('add-comment-btn');
+    const saveCommentBtn = document.getElementById('save-comment-btn');
+    const closeModal = document.querySelector('.modal .close');
+    
+    commentBtn.addEventListener('click', () => {
+        if (selectedFactures.size > 0) {
+            commentModal.style.display = 'block';
+        } else {
+            showAlert("Veuillez sélectionner au moins une facture.", 'warning');
+        }
+    });
+
+    closeModal.addEventListener('click', () => {
+        commentModal.style.display = 'none';
+    });
+
+    window.addEventListener('click', (event) => {
+        if (event.target == commentModal) {
+            commentModal.style.display = 'none';
+        }
+    });
+
+    saveCommentBtn.addEventListener('click', () => {
+        const commentText = document.getElementById('comment-text').value;
+        if (commentText.trim() === '') {
+            showAlert("Le commentaire ne peut pas être vide.", 'warning');
+            return;
+        }
+
+        const selectedFactureIds = Array.from(selectedFactures);
+
+        fetch('action/add-comment.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ 
-                numeros_de_facture: factureNumber,
-                date_echeance_payment: factureDate,
-                montant_facture: factureAmount,
-                montant_reste_a_payer: factureRemaining,
-                id_clients: factureClient
-            })
+            body: JSON.stringify({ factures: selectedFactureIds, comment: commentText, userId: userId })
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                fetch('action/get-user-initial.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ id_user: userId })
-                })
-                .then(response => response.json())
-                .then(userData => {
-                    const tbody = document.getElementById('factures-tbody');
-                    const statusColor = factureRemaining == 0 ? 'green' : 'orange';
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                    <td><span style="color: ${statusColor};">&#9679;</span></td>
-                    <td>${factureNumber}</td>
-                    <td>${factureDate}</td>
-                    <td>${factureAmount}</td>
-                    <td>${factureRemaining}</td>
-                    <td>${factureClient}</td>
-                    <td>${userData.initial_user_open_relance}</td>
-                    `;
-                    tbody.appendChild(row);
-                    document.getElementById('new-facture-number').value = '';
-                    document.getElementById('new-facture-date').value = '';
-                    document.getElementById('new-facture-amount').value = '';
-                    document.getElementById('new-facture-remaining').value = '';
-                    document.getElementById('new-facture-client').value = '';
-                });
+                showAlert("Commentaire ajouté avec succès.", 'success');
+                commentModal.style.display = 'none';
+                fetchFactures();
             } else {
-                alert('Erreur lors de l\'ajout de la facture.');
+                showAlert(data.message, 'danger');
             }
+        })
+        .catch(error => {
+            console.error('Error adding comment:', error);
+            showAlert("Erreur lors de l'ajout du commentaire.", 'danger');
+        });
+    });
+
+    document.getElementById('select-toggle-btn').addEventListener('click', () => {
+        selectionMode = !selectionMode;
+        document.getElementById('select-all').parentElement.style.display = selectionMode ? 'table-cell' : 'none';
+        applyFiltersAndRender();
+    });
+
+    fetchFactures();
+
+    // Fonction d'affichage des alertes
+    function showAlert(message, type = 'danger') {
+        const alertContainer = document.getElementById('alert-container');
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert ${type}`;
+        alertDiv.innerHTML = `<span class="closebtn">&times;</span>${message}`;
+
+        alertContainer.appendChild(alertDiv);
+
+        setTimeout(() => {
+            alertDiv.style.opacity = '0';
+            setTimeout(() => alertDiv.remove(), 600);
+        }, 5000);
+
+        const closeBtn = alertDiv.querySelector('.closebtn');
+        closeBtn.addEventListener('click', function() {
+            const div = this.parentElement;
+            div.style.opacity = '0';
+            setTimeout(() => div.remove(), 600);
         });
     }
 });

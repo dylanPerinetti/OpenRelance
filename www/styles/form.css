@@ -1,0 +1,198 @@
+@import url('variables.css');
+
+/* Styles pour le formulaire d'ajout de facture */
+#add-facture-form {
+    margin-bottom: 20px;
+    background-color: var(--input-background-color);
+    padding: 20px;
+    border: 1px solid var(--input-border-color);
+    border-radius: 10px;
+}
+
+#add-facture-form h2 {
+    margin-bottom: 20px;
+    color: var(--text-color);
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: var(--text-color);
+}
+
+.form-input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--input-border-color);
+    border-radius: 5px;
+    box-sizing: border-box;
+    font-size: 16px;
+    color: var(--text-color);
+    background-color: var(--input-background-color);
+    transition: border-color 0.3s ease-in-out;
+}
+
+.form-input:focus {
+    border-color: var(--primary-color);
+    outline: none;
+}
+
+/* Formulaire de commentaire */
+#add-comment-form {
+    margin-top: 20px;
+}
+
+#add-comment-form textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--input-border-color);
+    border-radius: 5px;
+    font-size: 16px;
+    box-sizing: border-box;
+    color: var(--text-color);
+    background-color: var(--input-background-color);
+}
+
+/* Formulaire d'ajout de commentaire */
+#add-comment-form {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#add-comment-form textarea {
+    width: 100%;
+    max-width: 600px;
+    padding: 12px 15px;
+    border: 1px solid var(--input-border-color);
+    border-radius: 10px;
+    font-size: 16px;
+    box-sizing: border-box;
+    color: var(--text-color);
+    background-color: var(--input-background-color);
+    margin-bottom: 10px;
+    transition: border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    box-shadow: 0 1px 3px var(--shadow-color);
+}
+
+#add-comment-form textarea:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 4px 8px var(--shadow-color);
+    outline: none;
+}
+
+#add-comment-form button,
+#add-relance-form button {
+    background-color: var(--primary-color);
+    color: var(--button-text-color);
+    padding: 10px 20px;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    box-shadow: 0 1px 3px var(--shadow-color);
+    max-width: 200px;
+    width: 100%;
+    text-align: center;
+}
+
+#add-comment-form button:hover {
+    background-color: var(--primary-color-dark);
+    box-shadow: 0 4px 8px var(--shadow-color);
+}
+
+/* Formulaire d'ajout de relance */
+#add-relance-form {
+    margin-top: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#add-relance-form label {
+    margin-right: 10px;
+    font-weight: bold;
+    color: var(--text-color);
+}
+
+#add-relance-form select,
+#add-relance-form input {
+    padding: 10px;
+    border: 1px solid var(--input-border-color);
+    border-radius: 10px;
+    font-size: 16px;
+    box-sizing: border-box;
+    color: var(--text-color);
+    background-color: var(--input-background-color);
+    transition: border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    box-shadow: 0 1px 3px var(--shadow-color);
+    width: auto;
+    flex: 1 1 20%;
+}
+
+#add-relance-form select:focus,
+#add-relance-form input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 4px 8px var(--shadow-color);
+    outline: none;
+}
+
+#add-relance-form button {
+    align-self: center; /* Centre le bouton */
+}
+
+#add-relance-form button:hover {
+    background-color: var(--primary-color-dark);
+    box-shadow: 0 4px 8px var(--shadow-color);
+}
+
+/* Styles pour les entrées en ligne */
+.inline-input {
+    background: none;
+    border: none;
+    border-bottom: 1px solid var(--input-border-color);
+    outline: none;
+    width: 100%;
+    padding: 6px 10px;
+    font-size: 16px;
+    box-sizing: border-box;
+    transition: border-bottom-color 0.3s;
+    color: var(--text-color);
+}
+
+.inline-input:focus {
+    border-bottom-color: var(--primary-color);
+}
+
+.inline-input[readonly] {
+    color: var(--text-color);
+    background: none;
+    cursor: default;
+}
+
+/* Styles pour les sélections en ligne */
+.inline-select {
+    background: none;
+    border: 1px solid var(--input-border-color);
+    outline: none;
+    width: 100%;
+    padding: 6px 10px;
+    font-size: 16px;
+    box-sizing: border-box;
+    border-radius: 5px;
+    color: var(--text-color);
+    background-color: var(--input-background-color);
+}
+
+.inline-select:focus {
+    border-color: var(--primary-color);
+}

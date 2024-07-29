@@ -1,9 +1,11 @@
+@import url('variables.css');
+
 /* Styles généraux pour le widget */
 .widget-content {
     padding: 20px;
-    background-color: var(--input-background-color); /* Slightly different from the main background */
+    background-color: var(--input-background-color);
     box-shadow: 0 1px 3px var(--shadow-color);
-    border: 1px solid var(--input-border-color); /* Subtle border for better visibility */
+    border: 1px solid var(--input-border-color);
     border-radius: 10px;
     margin: 20px auto;
     max-width: 80%;
@@ -13,6 +15,104 @@
 .widget-content:hover {
     box-shadow: 0 4px 8px var(--shadow-color);
     transform: translateY(-2px);
+}
+
+.comments-list {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px; /* Augmenté l'espacement entre les commentaires */
+    margin-top: 20px;
+}
+
+.comments-list ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+}
+
+.comments-list li {
+    background-color: var(--input-background-color);
+    border: 1px solid var(--input-border-color);
+    border-radius: 10px;
+    padding: 15px;
+    box-shadow: 0 1px 3px var(--shadow-color);
+    transition: box-shadow 0.3s ease-in-out, transform 0.3s ease-in-out;
+    max-width: 80%; /* Réduit la taille des commentaires */
+    margin: 0 auto 20px auto; /* Aligne les commentaires au centre avec espace en bas */
+    box-sizing: border-box;
+    word-wrap: break-word;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.comments-list li:hover {
+    box-shadow: 0 4px 8px var(--shadow-color);
+    transform: translateY(-2px);
+}
+
+.comments-list li p {
+    margin: 0;
+    color: var(--text-color);
+}
+
+.comments-list li p strong.comment-initials {
+    color: var(--primary-color);
+    font-weight: bold;
+}
+
+/* Styles pour les boutons */
+.form-button {
+    background-color: var(--primary-color);
+    color: var(--button-text-color);
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+    border-radius: 8px;
+    opacity: 0.8;
+    margin: 8px 0;
+}
+
+.form-button:hover {
+    opacity: 1;
+}
+
+.cancel-button {
+    background-color: red;
+    margin-right: auto;
+}
+
+.buttons-group {
+    display: flex;
+    justify-content: flex-start;
+}
+
+#add-client-btn{
+    margin: 0;
+}
+
+/* Display form inline for larger screens */
+@media (min-width: 769px) {
+    .form-row {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+    }
+
+    .form-group {
+        flex: 1 1 30%;
+        margin-right: 15px;
+    }
+
+    .form-group:last-child {
+        margin-right: 0;
+    }
+
+    .form-button {
+        align-self: flex-end;
+    }
 }
 
 /* Styles pour les détails de la facture */
@@ -81,7 +181,7 @@
 }
 
 /* Styles pour les tables */
-.clients-table, .contacts-table, .factures-table, .calendar-table {
+.factures-table, .clients-table, .contacts-table {
     width: 100%;
     border-collapse: collapse;
     margin: 20px 0;
@@ -92,284 +192,57 @@
     box-shadow: 0 1px 3px var(--shadow-color);
 }
 
-.clients-table th, .clients-table td, .contacts-table th, .contacts-table td, .factures-table th, .factures-table td, .calendar-table th, .calendar-table td {
+.factures-table th, .clients-table th, .contacts-table th,
+.factures-table td, .clients-table td, .contacts-table td {
     padding: 12px 15px;
-    border-bottom: 1px solid var(--input-border-color); /* Lighter border color */
+    border-bottom: 1px solid var(--input-border-color);
 }
 
-.clients-table th, .contacts-table th, .factures-table th, .calendar-table th {
-    background-color: var(--input-focus-background-color); /* Slight contrast for header */
+.factures-table th, .clients-table th, .contacts-table th {
+    background-color: var(--input-focus-background-color);
     color: var(--text-color);
     font-weight: normal;
     text-transform: none;
 }
 
-.clients-table tr:nth-child(even), .contacts-table tr:nth-child(even), .factures-table tr:nth-child(even), .calendar-table tr:nth-child(even) {
-    background-color: var(--input-background-color); /* Alternating row colors for better distinction */
+.factures-table tr:nth-child(even), .clients-table tr:nth-child(even), .contacts-table tr:nth-child(even) {
+    background-color: var(--input-background-color);
 }
 
-.clients-table tr:nth-child(odd), .contacts-table tr:nth-child(odd), .factures-table tr:nth-child(odd), .calendar-table tr:nth-child(odd) {
-    background-color: var(--background-color); /* Alternating row colors for better distinction */
+.factures-table tr:nth-child(odd), .clients-table tr:nth-child(odd), .contacts-table tr:nth-child(odd) {
+    background-color: var(--background-color);
 }
 
-.clients-table tr:hover, .contacts-table tr:hover, .factures-table tr:hover, .calendar-table tr:hover {
-    background-color: initial; /* Remove background color change on hover */
+.factures-table tr:hover, .clients-table tr:hover, .contacts-table tr:hover {
+    transform: scale(1.01);
+    transition: transform 0.2s ease-in-out;
+    background-color: inherit;
 }
 
-.clients-table td, .contacts-table td, .factures-table td, .calendar-table td {
+.factures-table td, .clients-table td, .contacts-table td {
     color: var(--text-color);
     position: relative;
-}
-
-/* Supprimer les changements de couleur au survol dans le calendrier */
-.calendar-table tr:hover {
-    background-color: initial;
-}
-
-/* Ajouter des bordures visibles au survol des cellules du calendrier */
-.calendar-table td:hover {
-    background-color: initial; /* Remove background color change on hover */
-    border-color: var(--primary-color); /* Change border color on hover */
-    border-width: 2px; /* Increase border width */
-}
-
-/* Styles pour les entrées en ligne */
-.inline-input {
-    background: none;
-    border: none;
-    border-bottom: 1px solid var(--input-border-color);
-    outline: none;
-    width: 100%;
-    padding: 6px 10px;
-    font-size: 16px;
-    box-sizing: border-box;
-    transition: border-bottom-color 0.3s;
-    color: var(--text-color); /* Ensure text color is visible */
-}
-
-.inline-input:focus {
-    border-bottom-color: var(--primary-color);
-}
-
-.inline-input[readonly] {
-    color: var(--text-color);
-    background: none;
-    cursor: default;
-}
-
-/* Styles pour les sélections en ligne */
-.inline-select {
-    background: none;
-    border: 1px solid var(--input-border-color);
-    outline: none;
-    width: 100%;
-    padding: 6px 10px;
-    font-size: 16px;
-    box-sizing: border-box;
-    border-radius: 5px;
-    color: var(--text-color); /* Ensure text color is visible */
-    background-color: var(--input-background-color); /* Match input background color */
-}
-
-.inline-select:focus {
-    border-color: var(--primary-color);
-}
-
-/* Styles spécifiques pour le calendrier */
-.calendar-widget {
-    padding: 20px;
-    background-color: var(--input-background-color); /* Fond clair pour un look moderne */
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Ombre douce pour une profondeur subtile */
-    border: 1px solid rgba(0, 0, 0, 0.1); /* Bordure légère */
-    border-radius: 12px; /* Coins légèrement arrondis */
-    margin: 20px auto;
-    max-width: 80%;
-    transition: box-shadow 0.3s ease-in-out, transform 0.3s ease-in-out;
-}
-
-.calendar-widget:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); /* Ombre plus marquée au survol */
-    transform: translateY(-2px);
-}
-
-.calendar-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 0;
-    font-size: 14px; /* Taille de police plus petite pour un look épuré */
-    text-align: center; /* Centre les jours de la semaine */
-    border-radius: 12px;
-    overflow: hidden;
-}
-
-.calendar-table th, .calendar-table td {
-    padding: 15px;
-    border: 1px solid rgba(0, 0, 0, 0.1); /* Bordures très légères pour une apparence propre */
-}
-
-.calendar-table th {
-    background-color: var(--input-focus-background-color); /* Fond contrastant pour les en-têtes */
-    color: var(--text-color);
-    font-weight: 500; /* Poids de police moyen pour un contraste doux */
-    text-transform: uppercase; /* Majuscules pour les jours de la semaine */
-}
-
-.calendar-table td {
-    vertical-align: top;
-    transition: background-color 0.3s ease-in-out, border-color 0.3s ease-in-out;
-}
-
-.calendar-table td.today {
-    border: 2px solid var(--primary-color); /* Bordure accentuée pour la date du jour */
-    background-color: rgba(0, 0, 0, 0.05); /* Fond léger pour mettre en valeur la date */
-}
-
-.calendar-table td {
-    text-align: center;
-    vertical-align: top;
-    position: relative;
-}
-
-.calendar-table td .relances-count {
-    display: block;
-    font-size: 12px; /* Taille de police plus petite pour les compteurs de relances */
-    color: var(--text-color);
-    margin-top: 4px;
-}
-
-/* Navigation du calendrier */
-.calendar-navigation {
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-.calendar-navigation .nav-link {
-    color: var(--primary-color);
-    text-decoration: none;
-    font-weight: 500;
-    margin: 0 15px;
-    font-size: 16px; /* Taille de police élégante pour la navigation */
-}
-
-.calendar-navigation .nav-link:hover {
-    text-decoration: underline;
-    color: var(--primary-color-dark); /* Couleur plus sombre au survol */
-}
-
-/* Styles pour les commentaires */
-.comments-list ul {
-    list-style-type: none;
-    padding: 0;
-}
-
-.comments-list li {
-    background-color: var(--input-background-color);
-    border: 1px solid var(--input-border-color);
-    padding: 10px;
-    margin-bottom: 10px;
-    border-radius: 5px;
-    box-shadow: 0 1px 2px var(--shadow-color);
-}
-
-.comments-list li p {
-    margin: 5px 0;
-    color: var(--text-color);
-}
-
-.comments-list li strong {
-    color: var(--primary-color);
-}
-
-/* Formulaire de commentaire */
-#add-comment-form {
-    margin-top: 20px;
-}
-
-#add-comment-form textarea {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid var(--input-border-color);
-    border-radius: 5px;
-    font-size: 16px;
-    box-sizing: border-box;
-    color: var(--text-color);
-    background-color: var(--input-background-color);
-}
-
-#add-comment-form button {
-    background-color: var(--primary-color);
-    color: var(--button-text-color);
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background-color 0.3s ease-in-out;
-}
-
-#add-comment-form button:hover {
-    background-color: var(--primary-color-dark);
-}
-
-/* Formulaire de relance */
-#add-relance-form {
-    margin-top: 20px;
-}
-
-#add-relance-form label {
-    display: block;
-    margin-bottom: 5px;
-    color: var(--text-color);
-    font-size: 16px;
-}
-
-#add-relance-form select,
-#add-relance-form input[type="date"] {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid var(--input-border-color);
-    border-radius: 5px;
-    font-size: 16px;
-    box-sizing: border-box;
-    margin-bottom: 10px;
-    color: var(--text-color);
-    background-color: var(--input-background-color);
-}
-
-#add-relance-form button {
-    background-color: var(--primary-color);
-    color: var(--button-text-color);
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background-color 0.3s ease-in-out;
-}
-
-#add-relance-form button:hover {
-    background-color: var(--primary-color-dark);
 }
 
 /* Media queries pour les petites tailles d'écran */
 @media (max-width: 768px) {
-    .clients-table thead, .contacts-table thead, .factures-table thead, .calendar-table thead {
+    .factures-table thead, .clients-table thead, .contacts-table thead {
         display: none;
     }
 
-    .clients-table tr, .contacts-table tr, .factures-table tr, .calendar-table tr {
+    .factures-table tr, .clients-table tr, .contacts-table tr {
         display: block;
         margin-bottom: 10px;
     }
 
-    .clients-table td, .contacts-table td, .factures-table td, .calendar-table td {
+    .factures-table td, .clients-table td, .contacts-table td {
         display: block;
         text-align: right;
         padding-left: 50%;
         position: relative;
     }
 
-    .clients-table td::before, .contacts-table td::before, .factures-table td::before, .calendar-table td::before {
+    .factures-table td::before, .clients-table td::before, .contacts-table td::before {
         content: attr(data-label);
         position: absolute;
         left: 0;
@@ -380,10 +253,58 @@
     }
 }
 
-/* Styles pour l'icône de crayon */
-.fas.fa-pencil-alt {
-    font-size: 16px;
-    color: var(--primary-color); /* More visible color */
-    margin-left: 5px;
-    vertical-align: middle; /* Aligns the icon with the text */
+.hidden-checkbox {
+    display: none;
+}
+
+.show-checkbox .hidden-checkbox {
+    display: inline-block;
+}
+
+.facture-row.disable-link {
+    pointer-events: none;
+}
+
+.filters label {
+    font-weight: bold;
+    color: var(--text-color);
+    margin-right: 10px;
+}
+
+.filters input.form-input,
+.filters select.form-input {
+    width: auto;
+    display: inline-block;
+    margin-right: 20px;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 20px 0;
+}
+
+.page-button {
+    background-color: var(--primary-color);
+    color: var(--button-text-color);
+    border: none;
+    padding: 10px 15px;
+    margin: 0 5px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease-in-out;
+}
+
+.page-button:hover {
+    background-color: var(--primary-color-dark);
+}
+
+.page-button.active {
+    background-color: var(--background-color);
+}
+
+#pagination-top .page-button,
+#pagination-bottom .page-button {
+    display: inline-block;
 }

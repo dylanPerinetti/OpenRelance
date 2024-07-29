@@ -1,0 +1,89 @@
+@import url('variables.css');
+
+/* Styles spécifiques pour le calendrier */
+.calendar-widget {
+    padding: 20px;
+    background-color: var(--input-background-color);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    margin: 20px auto;
+    max-width: 80%;
+    transition: box-shadow 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+
+.calendar-widget:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    transform: translateY(-2px);
+}
+
+.calendar-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+    font-size: 14px;
+    text-align: center;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.calendar-table th,
+.calendar-table td {
+    padding: 15px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.calendar-table th {
+    background-color: var(--input-focus-background-color);
+    color: var(--text-color);
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.calendar-table td {
+    vertical-align: top;
+    transition: background-color 0.3s ease-in-out, border-color 0.3s ease-in-out;
+}
+
+.calendar-table td.today {
+    border: 2px solid var(--primary-color);
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.calendar-table td .relances-count {
+    display: block;
+    font-size: 12px;
+    color: var(--text-color);
+    margin-top: 4px;
+}
+
+/* Navigation du calendrier */
+.calendar-navigation {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.calendar-navigation .nav-link {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 500;
+    margin: 0 15px;
+    font-size: 16px;
+}
+
+.calendar-navigation .nav-link:hover {
+    text-decoration: underline;
+    color: var(--primary-color-dark);
+}
+
+/* Supprimer les changements de couleur au survol dans le calendrier */
+.calendar-table tr:hover {
+    background-color: initial;
+}
+
+/* Ajouter des bordures visibles au survol des cellules du calendrier */
+.calendar-table td:hover {
+    background-color: initial;
+    border-color: var(--primary-color);
+    border-width: 2px;
+}

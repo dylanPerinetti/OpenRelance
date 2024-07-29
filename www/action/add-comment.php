@@ -2,37 +2,48 @@
 session_start();
 include '../connexion/mysql-db-config.php';
 
-if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
-    echo json_encode(['success' => false, 'message' => 'Non authentifié']);
-    exit;
-}
+$conn = get_db_connection('add'); // Utiliser le rôle 'add' pour les insertions
+
+header('Content-Type: application/json');
+
+$response = [];
 
 $data = json_decode(file_get_contents('php://input'), true);
-
-$id_factures = $data['id_factures'];
-$message_commentaire = $data['message_commentaire'];
-$id_user_open_relance = $_SESSION['user_id'];
-
-if (empty($message_commentaire) || !is_numeric($id_factures)) {
-    echo json_encode(['success' => false, 'message' => 'Données invalides']);
-    exit;
-}
-
-$conn = get_db_connection('add');
-$sql = "INSERT INTO commentaires (message_commentaire, id_factures, id_user_open_relance) VALUES (:message_commentaire, :id_factures, :id_user_open_relance)";
-$stmt = $conn->prepare($sql);
-$stmt->bindParam(':message_commentaire', $message_commentaire);
-$stmt->bindParam(':id_factures', $id_factures);
-$stmt->bindParam(':id_user_open_relance', $id_user_open_relance);
-
-$response = ['success' => false];
+$factures = $data['factures'];
+$comment = $data['comment'];
+$userId = $data['userId'];
 
 try {
-    if ($stmt->execute()) {
-        $response['success'] = true;
+    $conn->beginTransaction();
+
+    // Insertion du commentaire
+    $stmt = $conn->prepare("INSERT INTO commentaires (message_commentaire, id_user_open_relance) VALUES (:comment, :userId)");
+    $stmt->bindParam(':comment', $comment);
+    $stmt->bindParam(':userId', $userId);
+    $stmt->execute();
+    $commentId = $conn->lastInsertId();
+
+    // Préparation de la requête pour lier les commentaires aux factures
+    $stmtInsert = $conn->prepare("INSERT INTO commentaires_factures (id_commentaire, id_facture) VALUES (:commentId, :factureId)");
+
+    foreach ($factures as $factureId) {
+        $stmtInsert->bindParam(':commentId', $commentId);
+        $stmtInsert->bindParam(':factureId', $factureId);
+        $stmtInsert->execute();
     }
+
+    $conn->commit();
+    $response['success'] = true;
+    $response['message'] = 'Commentaire ajouté avec succès';
 } catch (PDOException $e) {
+    $conn->rollBack();
+    $response['success'] = false;
+    $response['message'] = 'Erreur lors de l\'ajout du commentaire: ' . $e->getMessage();
     error_log("PDOException: " . $e->getMessage());
+} catch (Exception $e) {
+    $conn->rollBack();
+    $response['success'] = false;
+    $response['message'] = 'Erreur: ' . $e->getMessage();
 }
 
 echo json_encode($response);

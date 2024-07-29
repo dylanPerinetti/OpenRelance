@@ -1,5 +1,6 @@
 <?php
 define('DB_HOST', 'localhost');
+define('DB_PORT', '3300'); // Ajoutez cette ligne pour définir le port
 define('DB_NAME', 'OpenRelance');
 
 // Utilisateurs et mots de passe
@@ -15,6 +16,7 @@ define('DB_PASS_MODIFY', 'password_modify');
 // Fonction pour obtenir la connexion à la base de données
 function get_db_connection($role = 'read') {
     $host = DB_HOST;
+    $port = DB_PORT; // Utiliser la constante du port
     $dbname = DB_NAME;
 
     switch ($role) {
@@ -34,7 +36,8 @@ function get_db_connection($role = 'read') {
     }
     
     try {
-        $dsn = "mysql:host=$host;dbname=$dbname;charset=utf8";
+        // Inclure le port dans la chaîne de connexion DSN
+        $dsn = "mysql:host=$host;port=$port;dbname=$dbname;charset=utf8";
         $options = [
             PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,

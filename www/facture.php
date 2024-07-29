@@ -34,8 +34,9 @@ if (!$facture) {
 // Récupération des commentaires associés
 $sql_comments = "SELECT c.date_commentaire, c.message_commentaire, u.initial_user_open_relance
 FROM commentaires c
+JOIN commentaires_factures cf ON c.id = cf.id_commentaire
 JOIN user_open_relance u ON c.id_user_open_relance = u.id
-WHERE c.id_factures = :id";
+WHERE cf.id_facture = :id";
 $stmt_comments = $conn->prepare($sql_comments);
 $stmt_comments->bindParam(':id', $facture_id, PDO::PARAM_INT);
 $stmt_comments->execute();
@@ -50,7 +51,7 @@ $stmt_contacts->bindParam(':id_clients', $facture['id_clients'], PDO::PARAM_INT)
 $stmt_contacts->execute();
 $contacts = $stmt_contacts->fetchAll(PDO::FETCH_ASSOC);
 
-$page_name = 'Facture n° ' . $facture['numeros_de_facture'];
+$page_name = 'Facture (' . $facture['numeros_de_facture'] . ')';
 ?>
 <!DOCTYPE html>
 <html lang="fr">

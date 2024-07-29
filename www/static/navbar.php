@@ -3,18 +3,18 @@
         <a href="index.php"><img src="img/LogoSansTitreOpenRelance.png" alt="Logo"></a>
     </div>
     <div class="navbar-links">
-        <?php if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true): ?>
             <a href="clients.php">Clients</a>
             <a href="contact.php">Contact</a>
             <a href="factures.php">Factures</a>
             <a href="Calendrier.php">Rappels</a>
-        <?php endif; ?>
     </div>
+        <?php if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true): ?>
     <div class="navbar-search">
         <input type="text" id="search-input" placeholder="Rechercher..." autocomplete="off">
         <i class="fas fa-search"></i>
         <div id="search-results" class="search-results"></div>
     </div>
+        <?php endif; ?>
     <div class="theme-switcher">
         <button id="theme-toggle"><i class="fas fa-moon"></i></button>
     </div>
@@ -66,5 +66,5 @@
         <div id="full-search-results"></div>
     </div>
 </div>
-
+<div id="alert-container"></div>
 <script src="scripts/script-navbar.js"></script>

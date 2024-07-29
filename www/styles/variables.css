@@ -1,0 +1,32 @@
+:root {
+    --primary-color: #0071e3;
+    --secondary-color: #333333;
+    --background-color: #ffffff;
+    --text-color: #333333;
+    --hover-color: #005bb5;
+    --input-border-color: #ccc;
+    --input-background-color: #f1f1f1;
+    --input-focus-background-color: #ddd;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    --widget-background-color: #f9f9f9;
+    --widget-shadow-color: rgba(0, 0, 0, 0.15);
+    --widget-border-radius: 12px;
+    --button-text-color: #ffffff;
+}
+
+body.dark {
+    --primary-color: #90caf9;
+    --secondary-color: #ffffff;
+    --background-color: #121212;
+    --text-color: #ffffff;
+    --hover-color: #82b1ff;
+    --input-border-color: #424242;
+    --input-background-color: #333333;
+    --input-focus-background-color: #555555;
+    --input-text-color: #ffffff;
+    --shadow-color: rgba(255, 255, 255, 0.1);
+    --widget-background-color: #1e1e1e;
+    --widget-shadow-color: rgba(255, 255, 255, 0.1);
+    --widget-border-radius: 12px;
+    --button-text-color: #ffffff;
+}

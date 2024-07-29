@@ -13,6 +13,7 @@ $page_name = 'Factures';
 </head>
 <body>
     <?php include 'static/navbar.php'?>
+    <?php include 'widget/widget-add-balance.php'?>
     <?php include 'widget/widget-factures.php'?>
     <?php include 'static/footer.php'?>
 </body>

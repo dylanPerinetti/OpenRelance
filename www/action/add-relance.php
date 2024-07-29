@@ -21,26 +21,48 @@ if (empty($type_relance) || empty($date_relance) || !is_numeric($id_factures) ||
 }
 
 $conn = get_db_connection('add');
-$sql = "INSERT INTO relance_client (type_relance, date_relance, id_contact_client, id_user_open_relance) 
-        VALUES (:type_relance, :date_relance, :id_contact_client, :id_user_open_relance)";
-$stmt = $conn->prepare($sql);
-$stmt->bindParam(':type_relance', $type_relance);
-$stmt->bindParam(':date_relance', $date_relance);
-$stmt->bindParam(':id_contact_client', $id_contact_client);
-$stmt->bindParam(':id_user_open_relance', $id_user_open_relance);
-
-$response = ['success' => false];
 
 try {
+    // Démarrer la transaction
+    $conn->beginTransaction();
+
+    // Insérer la nouvelle relance
+    $sql = "INSERT INTO relance_client (type_relance, date_relance, id_contact_client, id_user_open_relance) 
+            VALUES (:type_relance, :date_relance, :id_contact_client, :id_user_open_relance)";
+    $stmt = $conn->prepare($sql);
+    $stmt->bindParam(':type_relance', $type_relance);
+    $stmt->bindParam(':date_relance', $date_relance);
+    $stmt->bindParam(':id_contact_client', $id_contact_client);
+    $stmt->bindParam(':id_user_open_relance', $id_user_open_relance);
+
     if ($stmt->execute()) {
-        $response['success'] = true;
+        // Obtenir l'ID de la relance insérée
+        $id_relance_client = $conn->lastInsertId();
+
+        // Insérer dans la table relance_facture
+        $sql_relance_facture = "INSERT INTO relance_facture (id_relance_client, id_facture) VALUES (:id_relance_client, :id_facture)";
+        $stmt_relance_facture = $conn->prepare($sql_relance_facture);
+        $stmt_relance_facture->bindParam(':id_relance_client', $id_relance_client);
+        $stmt_relance_facture->bindParam(':id_facture', $id_factures);
+
+        if ($stmt_relance_facture->execute()) {
+            // Valider la transaction
+            $conn->commit();
+            echo json_encode(['success' => true]);
+        } else {
+            // Annuler la transaction en cas d'échec
+            $conn->rollBack();
+            echo json_encode(['success' => false, 'message' => 'Échec de l\'association de la relance à la facture.']);
+        }
     } else {
-        $response['message'] = 'Échec de l\'exécution de la requête.';
+        // Annuler la transaction en cas d'échec
+        $conn->rollBack();
+        echo json_encode(['success' => false, 'message' => 'Échec de l\'exécution de la requête.']);
     }
 } catch (PDOException $e) {
+    // Annuler la transaction en cas d'exception
+    $conn->rollBack();
     error_log("PDOException: " . $e->getMessage());
-    $response['message'] = 'Exception : ' . $e->getMessage();
+    echo json_encode(['success' => false, 'message' => 'Exception : ' . $e->getMessage()]);
 }
-
-echo json_encode($response);
 ?>

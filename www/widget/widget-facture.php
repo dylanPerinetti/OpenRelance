@@ -4,44 +4,33 @@
         <div class="box gauge-box">
             <div class="gauge-container" style="--percentage: <?php echo (1 - ($facture['montant_reste_a_payer'] / $facture['montant_facture'])) * 100; ?>%;">
                 <div class="gauge-text">
-                    <?php echo htmlspecialchars($facture['montant_facture']);?> €
+                    <?php echo number_format($facture['montant_facture'], 2, ',', ' '); ?> €
                     <div class="remaining">
-                        Restant: <?php echo htmlspecialchars($facture['montant_reste_a_payer']); ?> €
+                        Restant: <?php echo number_format($facture['montant_reste_a_payer'], 2, ',', ' '); ?> €
                     </div>
                 </div>
             </div>
         </div>
         <div class="box info-box">
             <p><strong>Numéro de Facture :</strong> <?php echo htmlspecialchars($facture['numeros_de_facture']); ?></p>
-            <p><strong>Date d'Échéance :</strong> <?php echo htmlspecialchars($facture['date_echeance_payment']); ?></p>
-            <p><strong>Montant Facture :</strong> <?php echo htmlspecialchars($facture['montant_facture']); ?> €</p>
-            <p><strong>Montant Restant :</strong> <?php echo htmlspecialchars($facture['montant_reste_a_payer']); ?> €</p>
-            <p><strong>Client :</strong> <?php echo htmlspecialchars($facture['nom_client']); ?></p>
+            <p><strong>Date d'Échéance :</strong> <span id="date-echeance"><?php echo htmlspecialchars($facture['date_echeance_payment']); ?></span></p>
+            <p><strong>Montant Facture :</strong> <span class="montant"><?php echo number_format($facture['montant_facture'], 2, ',', ' '); ?></span> €</p>
+            <p><strong>Montant Restant à Payer:</strong> <span class="montant"><?php echo number_format($facture['montant_reste_a_payer'], 2, ',', ' '); ?></span> €</p>
+            <p><strong>Client :</strong> <a href="client.php?id=<?=$facture['id_clients']?>"><?php echo htmlspecialchars($facture['nom_client']); ?></a></p>
         </div>
     </div>
 
     <h2>Commentaires</h2>
     <div class="comments-list">
-        <?php if (count($commentaires) > 0): ?>
-            <ul>
-                <?php foreach ($commentaires as $commentaire): ?>
-                    <li>
-                        <p><strong><?php echo htmlspecialchars($commentaire['initial_user_open_relance']); ?></strong> (<?php echo htmlspecialchars($commentaire['date_commentaire']); ?>) :</p>
-                        <p><?php echo htmlspecialchars($commentaire['message_commentaire']); ?></p>
-                    </li>
-                <?php endforeach; ?>
-            </ul>
-        <?php else: ?>
-            <p>Aucun commentaire pour cette facture.</p>
-        <?php endif; ?>
+        <ul>
+            <!-- Les commentaires seront chargés ici par le script JavaScript -->
+        </ul>
     </div>
 
-    <h2>Ajouter un Commentaire</h2>
     <form id="add-comment-form">
         <textarea id="comment-message" rows="4" placeholder="Ajouter un commentaire..." required></textarea>
         <button type="submit">Ajouter</button>
     </form>
-
     <?php if ($facture['montant_reste_a_payer'] > 0): ?>
         <h2>Programmer une Relance</h2>
         <form id="add-relance-form">
@@ -68,6 +57,9 @@
             <button type="submit">Ajouter</button>
         </form>
     <?php endif; ?>
-
+    <script>
+        const factureId = <?php echo json_encode($facture['id']); ?>;
+        const userId = <?php echo json_encode($_SESSION['user_id']); ?>;
+    </script>
     <script src="scripts/script-facture.js"></script>
 </div>

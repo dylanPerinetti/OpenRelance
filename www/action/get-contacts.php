@@ -9,7 +9,11 @@ header('Content-Type: application/json');
 $response = [];
 
 try {
-    $stmt = $conn->query("SELECT * FROM contactes_clients");
+    $stmt = $conn->query("
+        SELECT c.*, cl.numeros_parma, cl.nom_client, cl.id_user_open_relance
+        FROM contactes_clients c
+        JOIN clients cl ON c.id_clients = cl.id
+    ");
     $contacts = $stmt->fetchAll(PDO::FETCH_ASSOC);
     echo json_encode($contacts);
     log_nominal("Contacts retrieved successfully");

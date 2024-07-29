@@ -1,3 +1,5 @@
+@import url('variables.css');
+
 .modal {
     display: none;
     position: fixed;
@@ -7,7 +9,7 @@
     width: 100%;
     height: 100%;
     overflow: auto;
-    background-color: rgba(0,0,0,0.4);
+    background-color: rgba(0, 0, 0, 0.4);
     padding-top: 60px;
 }
 
@@ -22,14 +24,15 @@
     border-radius: 10px;
     overflow: hidden;
     padding: 20px;
+    position: relative; /* Ajouté pour positionner la croix */
 }
 
 @keyframes animatezoom {
-    from { transform: scale(0); } 
+    from { transform: scale(0); }
     to { transform: scale(1); }
 }
 
-.modal input[type=text], .modal input[type=password] {
+.modal input[type="text"], .modal input[type="password"] {
     width: 100%;
     padding: 15px;
     margin: 5px 0 22px 0;
@@ -40,7 +43,7 @@
     box-sizing: border-box;
 }
 
-.modal input[type=text]:focus, .modal input[type=password]:focus {
+.modal input[type="text"]:focus, .modal input[type="password"]:focus {
     background-color: var(--input-focus-background-color);
     outline: none;
 }
@@ -51,15 +54,17 @@
 }
 
 .modal button {
+
     background-color: var(--primary-color);
-    color: white;
+    color: var(--button-text-color);
     padding: 14px 20px;
-    margin: 8px 0;
+    font-size: 16px;
     border: none;
     cursor: pointer;
-    width: 100%;
     border-radius: 8px;
-    opacity: 0.9;
+    opacity: 0.8;
+    margin: 8px 0;
+    width: 100%;
 }
 
 .modal button:hover {
@@ -93,4 +98,23 @@
         width: 100%;
         margin: 0;
     }
+}
+
+/* Styles pour la croix de fermeture */
+.modal .close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    position: absolute;
+    top: 10px;
+    right: 20px;
+}
+
+.modal .close:hover,
+.modal .close:focus {
+    color: red;
+    text-decoration: none;
+    cursor: pointer;
 }

@@ -7,29 +7,38 @@
     <table class="contacts-table">
         <thead>
             <tr>
-                <th>ID</th>
-                <th>Fonction</th>
-                <th>Nom</th>
-                <th>Email</th>
-                <th>Téléphone</th>
-                <th>Client Associé</th>
+                <th><i class="fas fa-hashtag"></i> Numéro Parma</th>
+                <th><i class="fas fa-building"></i> Client</th>
+                <th><i class="fas fa-user-plus"></i> Nom</th>
+                <th><i class="fas fa-briefcase"></i> Fonction</th>
+                <th><i class="fas fa-phone"></i> Téléphone</th>
+                <th><i class="fas fa-envelope"></i> Email</th>
+                <th><i class="fas fa-user"></i> Ajouté Par</th>
+            </tr>
+            <tr>
+                <td><input type="text" id="new-contact-parma" placeholder="Numéro Parma" class="inline-input"></td>
+                <td>
+                    <input type="text" id="new-contact-client" placeholder="Client" class="inline-input" list="client-suggestions">
+                    <datalist id="client-suggestions"></datalist>
+                </td>
+                <td><input type="text" id="new-contact-name" placeholder="Nom" class="inline-input"></td>
+                <td>
+                    <select id="new-contact-function" class="inline-input">
+                        <option value="">Sélectionner</option>
+                        <option value="Comptable">Comptable</option>
+                        <option value="Gérant">Gérant</option>
+                    </select>
+                </td>
+                <td><input type="text" id="new-contact-phone" placeholder="Téléphone" class="inline-input"></td>
+                <td><input type="text" id="new-contact-email" placeholder="Email" class="inline-input"></td>
+                <td><button id="add-contact-btn" class="form-button">Ajouter</button></td>
             </tr>
         </thead>
         <tbody id="contacts-tbody">
             <tr>
-                <td colspan="6">Chargement des données...</td>
+                <td colspan="7">Chargement des données...</td>
             </tr>
         </tbody>
-        <tfoot>
-            <tr>
-                <td><i class="fas fa-pencil-alt"></i></td>
-                <td><input type="text" id="new-contact-function" placeholder="Fonction" class="inline-input"></td>
-                <td><input type="text" id="new-contact-name" placeholder="Nom" class="inline-input"></td>
-                <td><input type="text" id="new-contact-email" placeholder="Email" class="inline-input"></td>
-                <td><input type="text" id="new-contact-phone" placeholder="Téléphone" class="inline-input"></td>
-                <td><input type="text" id="new-contact-client" placeholder="Client" class="inline-input"></td>
-            </tr>
-        </tfoot>
     </table>
 
     <script>

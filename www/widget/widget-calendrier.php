@@ -69,34 +69,15 @@ $current_month = DateTime::createFromFormat('!m', $month)->format('F');
 $current_year = $year;
 ?>
 
-<!-- Ajout de la modal pour enregistrer une relance -->
+<!-- Ajout de la modal pour afficher les relances planifiées -->
 <div id="relanceModal" class="modal">
     <div class="modal-content">
         <span class="close">&times;</span>
-        <h2>Enregistrer une Relance</h2>
-        <form id="relanceForm">
-            <label for="type_relance">Type de Relance:</label>
-            <select name="type_relance" id="type_relance">
-                <option value="mail">Mail</option>
-                <option value="appel">Appel</option>
-                <option value="courrier1">Courrier 1</option>
-                <option value="courrier2">Courrier 2</option>
-                <option value="recommande">Recommandé</option>
-            </select>
-            <br>
-            <label for="date_relance">Date de Relance:</label>
-            <input type="date" id="date_relance" name="date_relance" readonly>
-            <br>
-            <label for="nom_client">Nom Client (non obligatoire):</label>
-            <input type="text" id="nom_client" name="nom_client">
-            <br>
-            <label for="contact_client">Contact Client:</label>
-            <input type="text" id="contact_client" name="contact_client" required>
-            <br>
-            <button type="submit">Enregistrer</button>
-        </form>
+        <h2>Relances Planifiées</h2>
+        <div id="plannedRelances"></div>
     </div>
 </div>
+
 
 <div class="calendar-widget">
     <h2>Calendrier des Relances</h2>
@@ -140,10 +121,6 @@ $current_year = $year;
     </table>
 </div>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
-<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-
 <script>
     // Gestion de la modal
     var modal = document.getElementById("relanceModal");
@@ -153,7 +130,73 @@ $current_year = $year;
     document.querySelectorAll('.calendar-cell').forEach(cell => {
         cell.addEventListener('click', function() {
             var date = this.getAttribute('data-date');
-            document.getElementById('date_relance').value = date;
+
+            // Requête AJAX pour obtenir les relances planifiées pour cette date
+            fetch('action/get-relances.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ date: date })
+            })
+            .then(response => response.json())
+            .then(data => {
+                var plannedRelancesDiv = document.getElementById('plannedRelances');
+                plannedRelancesDiv.innerHTML = ''; // Vider le contenu précédent
+
+                if (data.length > 0) {
+                    // Regrouper les relances par ID de relance
+                    var relancesMap = data.reduce((acc, relance) => {
+                        if (!acc[relance.relance_id]) {
+                            acc[relance.relance_id] = {
+                                type_relance: relance.type_relance,
+                                nom_client: relance.nom_client,
+                                contact_client: relance.contact_client,
+                                factures: []
+                            };
+                        }
+                        if (relance.facture_id) {
+                            acc[relance.relance_id].factures.push({
+                                facture_id: relance.facture_id,
+                                numeros_de_facture: relance.numeros_de_facture,
+                                montant_facture: relance.montant_facture,
+                                date_echeance_payment: relance.date_echeance_payment
+                            });
+                        }
+                        return acc;
+                    }, {});
+
+                    // Afficher les relances et les factures associées
+                    for (var relanceId in relancesMap) {
+                        if (relancesMap.hasOwnProperty(relanceId)) {
+                            var relanceInfo = document.createElement('div');
+                            relanceInfo.innerHTML = `
+                                <p>Type: ${relancesMap[relanceId].type_relance}</p>
+                                <p>Client: ${relancesMap[relanceId].nom_client || 'N/A'}</p>
+                                <p>Contact: ${relancesMap[relanceId].contact_client}</p>
+                                <p>Factures:</p>
+                            `;
+
+                            var facturesList = document.createElement('ul');
+                            relancesMap[relanceId].factures.forEach(facture => {
+                                var factureItem = document.createElement('li');
+                                factureItem.innerHTML = `<a href="facture.php?id=${facture.facture_id}">${facture.numeros_de_facture} - ${facture.montant_facture}€ - Échéance: ${facture.date_echeance_payment}</a>`;
+                                facturesList.appendChild(factureItem);
+                            });
+                            
+                            relanceInfo.appendChild(facturesList);
+                            relanceInfo.innerHTML += '<hr>';
+                            plannedRelancesDiv.appendChild(relanceInfo);
+                        }
+                    }
+                } else {
+                    plannedRelancesDiv.innerHTML = '<p>Aucune relance planifiée.</p>';
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+            });
+
             modal.style.display = "block";
         });
     });
@@ -169,56 +212,6 @@ $current_year = $year;
             modal.style.display = "none";
         }
     }
-
-    // Autocomplétion pour le champ "Contact Client"
-    $("#contact_client").autocomplete({
-        source: function(request, response) {
-            $.ajax({
-                url: 'action/search-contacts.php',
-                type: 'POST',
-                dataType: 'json',
-                data: JSON.stringify({ search: request.term }),
-                contentType: 'application/json',
-                success: function(data) {
-                    response($.map(data, function(item) {
-                        return {
-                            label: item.nom_contactes_clients,
-                            value: item.nom_contactes_clients,
-                            id: item.id
-                        };
-                    }));
-                }
-            });
-        },
-        select: function(event, ui) {
-            $('#contact_client').data('selected-id', ui.item.id);
-        },
-        minLength: 2
-    });
-
-    // Soumettre le formulaire
-    document.getElementById('relanceForm').addEventListener('submit', function(event) {
-        event.preventDefault();
-        
-        var formData = new FormData(this);
-        formData.append('id_contact_client', $('#contact_client').data('selected-id'));
-        
-        fetch('action/add-relance.php', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('Relance enregistrée avec succès!');
-                modal.style.display = "none";
-                // Optionnel: mettre à jour le calendrier ou effectuer d'autres actions
-            } else {
-                alert('Erreur lors de l\'enregistrement de la relance.');
-            }
-        })
-        .catch(error => {
-            console.error('Erreur:', error);
-        });
-    });
 </script>
+
+

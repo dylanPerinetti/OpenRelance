@@ -2,23 +2,28 @@
 require_once '../connexion/mysql-db-config.php';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $nom = filter_input(INPUT_POST, 'nom', FILTER_SANITIZE_STRING);
-    $prenom = filter_input(INPUT_POST, 'prenom', FILTER_SANITIZE_STRING);
-    $initiales = filter_input(INPUT_POST, 'initiales', FILTER_SANITIZE_STRING);
-    $type_de_profil = filter_input(INPUT_POST, 'type_de_profil', FILTER_SANITIZE_NUMBER_INT);
-    $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
-    $password = filter_input(INPUT_POST, 'psw', FILTER_SANITIZE_STRING);
+    // Assainir et valider les champs
+    $nom = htmlspecialchars($_POST['nom'], ENT_QUOTES, 'UTF-8');
+    $prenom = htmlspecialchars($_POST['prenom'], ENT_QUOTES, 'UTF-8');
+    $initiales = htmlspecialchars($_POST['initiales'], ENT_QUOTES, 'UTF-8');
+    $type_de_profil = filter_input(INPUT_POST, 'type_de_profil', FILTER_VALIDATE_INT);
+    $email = filter_input(INPUT_POST, 'email', FILTER_VALIDATE_EMAIL);
+    $password = $_POST['psw']; // Pas besoin d'assainir les mots de passe
 
-    if (empty($nom) || empty($prenom) || empty($initiales) || empty($type_de_profil) || empty($email) || empty($password)) {
-        log_error('Missing registration fields.');
-        echo 'Veuillez remplir tous les champs.';
+    // Vérifier si les champs sont vides ou invalides
+    if (empty($nom) || empty($prenom) || empty($initiales) || $type_de_profil === false || $email === false || empty($password)) {
+        log_error('Missing or invalid registration fields.');
+        echo 'Veuillez remplir tous les champs correctement.';
         exit;
     }
 
+    // Hasher le mot de passe
     $password_hashed = password_hash($password, PASSWORD_BCRYPT);
 
+    // Connexion à la base de données
     $conn = get_db_connection('add');
 
+    // Préparer et exécuter la requête SQL
     $sql = 'INSERT INTO user_open_relance (nom_user_open_relance, prenom_user_open_relance, initial_user_open_relance, type_de_profil, email_user_open_relance, mot_de_passe) VALUES (:nom, :prenom, :initiales, :type_de_profil, :email, :mot_de_passe)';
     $stmt = $conn->prepare($sql);
     $stmt->bindParam(':nom', $nom);
@@ -28,6 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $stmt->bindParam(':email', $email);
     $stmt->bindParam(':mot_de_passe', $password_hashed);
 
+    // Exécuter la requête et vérifier le succès
     if ($stmt->execute()) {
         log_nominal("User registered: $email");
         echo 'Inscription réussie!';
