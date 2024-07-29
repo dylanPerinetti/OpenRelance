@@ -138,6 +138,7 @@ La base de données **OpenRelance** est conçue pour gérer les informations li�
     CREATE TABLE factures (
         id INT AUTO_INCREMENT PRIMARY KEY,
         numeros_de_facture VARCHAR(255) NOT NULL UNIQUE,
+        date_emission_facture DATE NOT NULL,
         date_echeance_payment DATE NOT NULL,
         montant_facture DECIMAL(10, 2) NOT NULL,
         montant_reste_a_payer DECIMAL(10, 2) NOT NULL,
