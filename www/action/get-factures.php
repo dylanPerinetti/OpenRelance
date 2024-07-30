@@ -14,12 +14,13 @@ try {
             f.id, 
             f.numeros_de_facture, 
             f.date_echeance_payment, 
-            f.date_emission_facture, -- Ajouter la colonne ici
+            f.date_emission_facture,
             f.montant_facture, 
             f.montant_reste_a_payer, 
             c.nom_client, 
             c.numeros_parma,
-            f.id_user_open_relance
+            f.id_user_open_relance,
+            f.id_clients
         FROM 
             factures f
         JOIN 

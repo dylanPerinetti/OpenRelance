@@ -4,6 +4,8 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentPage = 1;
     let itemsPerPage = parseInt(document.getElementById('items-per-page').value, 10);
     let selectionMode = false;
+    let sortColumn = null;
+    let sortDirection = 'asc';
 
     const fetchFactures = () => {
         fetch('action/get-factures.php')
@@ -21,6 +23,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const applyFiltersAndRender = () => {
         const searchValue = document.getElementById('search').value.toLowerCase();
         const statusFilter = document.getElementById('status-filter').value;
+        const dateEcheanceFilter = document.getElementById('date-echeance-filter').value;
         itemsPerPage = parseInt(document.getElementById('items-per-page').value, 10);
 
         let filteredData = facturesData;
@@ -37,6 +40,18 @@ document.addEventListener('DOMContentLoaded', function() {
             filteredData = filteredData.filter(facture => facture.montant_reste_a_payer > 0);
         } else if (statusFilter === 'paye') {
             filteredData = filteredData.filter(facture => facture.montant_reste_a_payer == 0);
+        }
+
+        if (dateEcheanceFilter) {
+            filteredData = filteredData.filter(facture => new Date(facture.date_echeance_payment) <= new Date(dateEcheanceFilter));
+        }
+
+        if (sortColumn) {
+            filteredData.sort((a, b) => {
+                if (a[sortColumn] < b[sortColumn]) return sortDirection === 'asc' ? -1 : 1;
+                if (a[sortColumn] > b[sortColumn]) return sortDirection === 'asc' ? 1 : -1;
+                return 0;
+            });
         }
 
         renderFactures(filteredData);
@@ -147,6 +162,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     document.getElementById('search').addEventListener('input', applyFiltersAndRender);
     document.getElementById('status-filter').addEventListener('change', applyFiltersAndRender);
+    document.getElementById('date-echeance-filter').addEventListener('change', applyFiltersAndRender);
     document.getElementById('items-per-page').addEventListener('change', () => {
         currentPage = 1; // Reset to first page when items per page change
         applyFiltersAndRender();
@@ -179,34 +195,48 @@ document.addEventListener('DOMContentLoaded', function() {
             const factureId = event.target.dataset.id;
             const clientId = event.target.dataset.client;
             if (event.target.checked) {
-                selectedFactures.add(factureId);
+                const clientIds = new Set(Array.from(selectedFactures).map(id => {
+                    const checkbox = document.querySelector(`.select-facture[data-id="${id}"]`);
+                    return checkbox ? checkbox.dataset.client : null;
+                }).filter(id => id !== null));
+
+                if (clientIds.size > 1) {
+                    showAlert("Vous ne pouvez sélectionner que des factures du même client pour ajouter une relance groupée.", 'warning');
+                    event.target.checked = false;
+                } else {
+                    selectedFactures.add(factureId);
+                    fetchContactsForClient(clientId);
+                }
             } else {
                 selectedFactures.delete(factureId);
+                validateSelectedFactures();
             }
-            validateSelectedFactures();
         }
     });
 
-    const validateSelectedFactures = () => {
-        const clientIds = Array.from(selectedFactures).map(id => {
-            const checkbox = document.querySelector(`.select-facture[data-id="${id}"]`);
-            return checkbox ? checkbox.dataset.client : null;
-        }).filter(id => id !== null);
-
-        const uniqueClientIds = [...new Set(clientIds)];
-        if (uniqueClientIds.length > 1) {
-            showAlert("Vous ne pouvez sélectionner que des factures du même client pour ajouter un commentaire groupé.", 'warning');
-            selectedFactures.clear();
-            document.querySelectorAll('.select-facture').forEach(checkbox => {
-                checkbox.checked = false;
+    const fetchContactsForClient = (clientId) => {
+        fetch(`action/get-contacts-by-idclient.php?client_id=${clientId}`)
+            .then(response => response.json())
+            .then(data => {
+                const contactSelect = document.getElementById('contact-client');
+                contactSelect.innerHTML = '<option value="">Sélectionner un contact</option>';
+                data.forEach(contact => {
+                    const option = document.createElement('option');
+                    option.value = contact.id;
+                    option.textContent = `${contact.nom_contactes_clients} - ${contact.mail_contactes_clients}`;
+                    contactSelect.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching contacts:', error);
+                showAlert('Erreur lors de la récupération des contacts', 'danger');
             });
-        }
     };
 
     const commentModal = document.getElementById('comment-modal');
     const commentBtn = document.getElementById('add-comment-btn');
     const saveCommentBtn = document.getElementById('save-comment-btn');
-    const closeModal = document.querySelector('.modal .close');
+    const closeModal = commentModal.querySelector('.close');
     
     commentBtn.addEventListener('click', () => {
         if (selectedFactures.size > 0) {
@@ -261,7 +291,80 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('select-toggle-btn').addEventListener('click', () => {
         selectionMode = !selectionMode;
         document.getElementById('select-all').parentElement.style.display = selectionMode ? 'table-cell' : 'none';
+        document.getElementById('select-all').style.display = selectionMode ? 'table-cell' : 'none';
         applyFiltersAndRender();
+    });
+
+    const relanceModal = document.getElementById('relance-modal');
+    const relanceBtn = document.getElementById('add-relance-btn');
+    const saveRelanceBtn = document.getElementById('save-relance-btn');
+    const closeRelanceModal = relanceModal.querySelector('.close');
+    
+    relanceBtn.addEventListener('click', () => {
+        if (selectedFactures.size > 0) {
+            relanceModal.style.display = 'block';
+        } else {
+            showAlert("Veuillez sélectionner au moins une facture.", 'warning');
+        }
+    });
+
+    closeRelanceModal.addEventListener('click', () => {
+        relanceModal.style.display = 'none';
+    });
+
+    window.addEventListener('click', (event) => {
+        if (event.target == relanceModal) {
+            relanceModal.style.display = 'none';
+        }
+    });
+
+    saveRelanceBtn.addEventListener('click', () => {
+        const relanceType = document.getElementById('relance-type').value;
+        const relanceDate = document.getElementById('relance-date').value;
+        const contactClientId = document.getElementById('contact-client').value;
+
+        if (relanceType.trim() === '' || relanceDate.trim() === '' || contactClientId === '') {
+            showAlert("Tous les champs de la relance doivent être remplis.", 'warning');
+            return;
+        }
+
+        const selectedFactureIds = Array.from(selectedFactures);
+
+        fetch('action/add-relance-factures.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ factures: selectedFactureIds, relanceType: relanceType, relanceDate: relanceDate, contactId: contactClientId, userId: userId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showAlert("Relance ajoutée avec succès.", 'success');
+                relanceModal.style.display = 'none';
+                fetchFactures();
+            } else {
+                showAlert(data.message, 'danger');
+            }
+        })
+        .catch(error => {
+            console.error('Error adding relance:', error);
+            showAlert("Erreur lors de l'ajout de la relance.", 'danger');
+        });
+    });
+
+    // Ajout de la fonctionnalité de tri
+    document.querySelectorAll('.factures-table th').forEach(header => {
+        header.addEventListener('click', () => {
+            const column = header.dataset.column;
+            if (sortColumn === column) {
+                sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                sortColumn = column;
+                sortDirection = 'asc';
+            }
+            applyFiltersAndRender();
+        });
     });
 
     fetchFactures();

@@ -1,29 +1,14 @@
-// Fonction d'affichage des alertes
-function showAlert(message, type = 'danger') {
-    const alertContainer = document.getElementById('alert-container');
-    const alertDiv = document.createElement('div');
-    alertDiv.className = `alert ${type}`;
-    alertDiv.innerHTML = `<span class="closebtn">&times;</span>${message}`;
-
-    alertContainer.appendChild(alertDiv);
-
-    setTimeout(() => {
-        alertDiv.style.opacity = '0';
-        setTimeout(() => alertDiv.remove(), 600);
-    }, 5000);
-
-    const closeBtn = alertDiv.querySelector('.closebtn');
-    closeBtn.addEventListener('click', function() {
-        const div = this.parentElement;
-        div.style.opacity = '0';
-        setTimeout(() => div.remove(), 600);
-    });
-}
-
 document.addEventListener('DOMContentLoaded', function() {
     fetchContacts();
 
     const addContactBtn = document.getElementById('add-contact-btn');
+    const importContactsBtn = document.getElementById('import-contacts-btn');
+    const exportContactsBtn = document.getElementById('export-contacts-btn');
+    const contactsCsvFile = document.getElementById('contacts-csv-file');
+    const contactModal = document.getElementById('contact-modal');
+    const closeModalBtn = document.querySelector('.close');
+    const editContactBtn = document.getElementById('edit-contact-btn');
+    const saveContactBtn = document.getElementById('save-contact-btn');
 
     document.getElementById('new-contact-parma').addEventListener('input', function() {
         filterContacts();
@@ -53,6 +38,60 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    importContactsBtn.addEventListener('click', function() {
+        contactsCsvFile.click();
+    });
+
+    contactsCsvFile.addEventListener('change', function() {
+        const file = this.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const content = e.target.result;
+                importContactsCSV(content);
+            };
+            reader.readAsText(file);
+        }
+    });
+
+    exportContactsBtn.addEventListener('click', function() {
+        fetch('action/export-contacts.php')
+        .then(response => response.blob())
+        .then(blob => {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'contacts.csv';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        });
+    });
+
+    closeModalBtn.addEventListener('click', function() {
+        contactModal.style.display = 'none';
+    });
+
+    window.addEventListener('click', function(event) {
+        if (event.target === contactModal) {
+            contactModal.style.display = 'none';
+        }
+    });
+
+    editContactBtn.addEventListener('click', function() {
+        enableEditMode();
+    });
+
+    saveContactBtn.addEventListener('click', function() {
+        const id = document.getElementById('contact-id').value;
+        const fonction = document.getElementById('contact-fonction').value;
+        const nom = document.getElementById('contact-nom').value;
+        const email = document.getElementById('contact-email').value;
+        const telephone = document.getElementById('contact-telephone').value;
+
+        updateContact(id, fonction, nom, email, telephone);
+    });
+
     function fetchContacts() {
         fetch('action/get-contacts.php')
         .then(response => response.json())
@@ -71,6 +110,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     .then(response => response.json())
                     .then(userData => {
                         const row = document.createElement('tr');
+                        row.dataset.contactId = contact.id;
                         row.innerHTML = `
                         <td>${contact.numeros_parma}</td>
                         <td>${contact.nom_client}</td>
@@ -80,6 +120,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         <td><a href="mailto:${contact.mail_contactes_clients}?subject=${contact.numeros_parma}- ${contact.nom_client} - Relance">${contact.mail_contactes_clients}</a></td>
                         <td>${userData ? userData.initial_user_open_relance : 'N/A'}</td>
                         `;
+                        row.addEventListener('click', function() {
+                            showContactModal(contact);
+                        });
                         tbody.appendChild(row);
                     });
                 });
@@ -147,8 +190,106 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('new-contact-email').value = '';
                 showAlert('Contact ajouté avec succès.', 'success');
             } else {
-                showAlert('Erreur lors de l\'ajout du contact.', 'danger');
+                showAlert(data.message || 'Erreur lors de l\'ajout du contact.', 'danger');
             }
+        })
+        .catch(error => {
+            console.error('Erreur lors de l\'ajout du contact:', error);
+            showAlert('Erreur lors de l\'ajout du contact.', 'danger');
+        });
+    }
+
+    function showContactModal(contact) {
+        document.getElementById('contact-id').value = contact.id;
+        document.getElementById('contact-fonction').value = contact.fonction_contactes_clients;
+        document.getElementById('contact-nom').value = contact.nom_contactes_clients;
+        document.getElementById('contact-email').value = contact.mail_contactes_clients;
+        document.getElementById('contact-telephone').value = contact.telphone_contactes_clients;
+        document.getElementById('contact-client').value = contact.nom_client;
+        document.getElementById('contact-parma').value = contact.numeros_parma;
+
+        disableEditMode();
+        contactModal.style.display = 'block';
+    }
+
+    function enableEditMode() {
+        document.getElementById('contact-fonction').readOnly = false;
+        document.getElementById('contact-nom').readOnly = false;
+        document.getElementById('contact-email').readOnly = false;
+        document.getElementById('contact-telephone').readOnly = false;
+        editContactBtn.style.display = 'none';
+        saveContactBtn.style.display = 'inline-block';
+    }
+
+    function disableEditMode() {
+        document.getElementById('contact-fonction').readOnly = true;
+        document.getElementById('contact-nom').readOnly = true;
+        document.getElementById('contact-email').readOnly = true;
+        document.getElementById('contact-telephone').readOnly = true;
+        editContactBtn.style.display = 'inline-block';
+        saveContactBtn.style.display = 'none';
+    }
+
+    function updateContact(id, fonction, nom, email, telephone) {
+        fetch('action/update-contact.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                id: id,
+                fonction_contactes_clients: fonction,
+                nom_contactes_clients: nom,
+                mail_contactes_clients: email,
+                telphone_contactes_clients: telephone
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                fetchContacts();
+                disableEditMode();
+                contactModal.style.display = 'none';
+                showAlert('Contact mis à jour avec succès.', 'success');
+            } else {
+                showAlert(data.message || 'Erreur lors de la mise à jour du contact.', 'danger');
+            }
+        })
+        .catch(error => {
+            console.error('Erreur lors de la mise à jour du contact:', error);
+            showAlert('Erreur lors de la mise à jour du contact.', 'danger');
+        });
+    }
+
+    function importContactsCSV(content) {
+        const rows = content.split('\n').slice(1).map(row => row.split(','));
+        const contacts = rows.map(row => ({
+            numeros_parma: row[0].trim(),
+            nom_client: row[1].trim(),
+            nom_contactes_clients: row[2].trim(),
+            fonction_contactes_clients: row[3].trim(),
+            telphone_contactes_clients: row[4].trim(),
+            mail_contactes_clients: row[5].trim()
+        }));
+        fetch('action/import-contacts.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ contacts: contacts })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                fetchContacts();
+                showAlert('Contacts importés avec succès.', 'success');
+            } else {
+                showAlert(data.message || 'Erreur lors de l\'importation des contacts.', 'danger');
+            }
+        })
+        .catch(error => {
+            console.error('Erreur lors de l\'importation des contacts:', error);
+            showAlert('Erreur lors de l\'importation des contacts.', 'danger');
         });
     }
 

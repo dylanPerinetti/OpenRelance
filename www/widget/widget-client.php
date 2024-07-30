@@ -7,6 +7,10 @@ $user_id = $_SESSION['user_id'];
     <div id="client-info">
         <p>Chargement des informations du client...</p>
     </div>
+    <h2>Relances</h2>
+    <div id="relance-info">
+        <p>Chargement des relances...</p>
+    </div>
     <h2>Factures</h2>
     <p id="total-due">Total dû à ce jour: <strong>0,00 €</strong></p>
     <p id="unpaid-count">Il y a 0 facture(s) impayée(s) à ce jour.</p>
@@ -60,10 +64,6 @@ $user_id = $_SESSION['user_id'];
             </tr>
         </tbody>
     </table>
-    <h2>Relances</h2>
-    <div id="relance-info">
-        <p>Chargement des relances...</p>
-    </div>
     <button id="download-pdf">Télécharger en PDF</button>
     <script>
         var clientId = <?php echo $client_id; ?>;

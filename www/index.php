@@ -11,7 +11,6 @@ $page_name = 'Accueil';
 <body>
     <?php include 'static/navbar.php'?>
     <?php if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true): ?>
-    <?php include 'widget/widget-add-balance.php'?>
     <?php include 'widget/widget-calendrier.php'?>
     <?php include 'widget/widgets-dashboard.php'?>
     <?php else: ?>

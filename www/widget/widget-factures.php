@@ -16,17 +16,22 @@ $user_id = $_SESSION['user_id'];
             <option value="tous">Tous</option>
             <option value="paye">Payé</option>
         </select>
-        
+        <!-- Ajout du filtre par date d'échéance -->
+        <label for="date-echeance-filter">Date d'échéance avant :</label>
+        <input type="date" id="date-echeance-filter" class="form-input" value="<?php echo date('Y-m-d', strtotime('+10 days')); ?>">
+
         <label for="items-per-page">Factures par page:</label>
         <select id="items-per-page" class="form-input">
             <option value="5">5</option>
-            <option value="10" selected>10</option>
+            <option value="10">10</option>
             <option value="20">20</option>
-            <option value="50">50</option>
+            <option value="50" selected>50</option>
+            <option value="100">100</option>
         </select>
     </div>
     <button id="select-toggle-btn" class="form-button">Sélectionner</button>
     <button id="add-comment-btn" class="form-button">Ajouter un commentaire</button>
+    <button id="add-relance-btn" class="form-button">Ajouter une relance</button>
     
     <!-- Pagination haut -->
     <div class="pagination" id="pagination-top"></div>
@@ -34,14 +39,14 @@ $user_id = $_SESSION['user_id'];
     <table class="factures-table">
         <thead>
             <tr>
-                <th style="display: none;"><input type="checkbox" id="select-all" class="hidden-checkbox"></th>
-                <th><i class="fas fa-info-circle"></i> Statut</th>
-                <th><i class="fas fa-hashtag"></i> Numéros de Parma</th>
-                <th><i class="fas fa-building"></i> Client</th>
-                <th><i class="fas fa-file-invoice"></i> Numéro de Facture</th>
-                <th><i class="fas fa-calendar-alt"></i> Date d'Émission</th> 
-                <th><i class="fas fa-calendar-alt"></i> Date d'Échéance</th>
-                <th><i class="fas fa-euro-sign"></i> Montant</th>
+                <th style="display: none;"><input type="checkbox" id="select-all" class="hidden-checkbox" style="display: none;"></th>
+                <th data-column="statut"><i class="fas fa-info-circle"></i> Statut</th>
+                <th data-column="numeros_parma"><i class="fas fa-hashtag"></i> Numéros de Parma</th>
+                <th data-column="nom_client"><i class="fas fa-building"></i> Client</th>
+                <th data-column="numeros_de_facture"><i class="fas fa-file-invoice"></i> Numéro de Facture</th>
+                <th data-column="date_emission_facture"><i class="fas fa-calendar-alt"></i> Date d'Émission</th> 
+                <th data-column="date_echeance_payment"><i class="fas fa-calendar-alt"></i> Date d'Échéance</th>
+                <th data-column="montant_facture"><i class="fas fa-euro-sign"></i> Montant</th>
             </tr>
         </thead>
         <tbody id="factures-tbody">
@@ -50,14 +55,10 @@ $user_id = $_SESSION['user_id'];
             </tr>
         </tbody>
     </table>
+
     
     <!-- Pagination bas -->
     <div class="pagination" id="pagination-bottom"></div>
-    <script>
-        var userInitiales = "<?php echo $user_initiales; ?>";
-        var userId = "<?php echo $user_id; ?>";
-    </script>
-    <script src="scripts/script-factures.js"></script>
 </div>
 <!-- Modal pour ajouter des commentaires -->
 <div id="comment-modal" class="modal">
@@ -68,3 +69,28 @@ $user_id = $_SESSION['user_id'];
         <button id="save-comment-btn" class="form-button">Enregistrer</button>
     </div>
 </div>
+<!-- Modal pour ajouter des relances -->
+<div id="relance-modal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Ajouter une relance</h2>
+        <label for="relance-type">Type de relance:</label>
+        <select id="relance-type" class="form-input">
+            <option value="mail">Mail</option>
+            <option value="courier 1">Courier 1</option>
+            <option value="courier 2">Courier 2</option>
+            <option value="recommandé">Recommandé</option>
+        </select>
+        <label for="contact-client">Contact Client:</label>
+        <select id="contact-client" class="form-input"></select>
+        <label for="relance-date">Date de relance:</label>
+        <input type="date" id="relance-date" class="form-input">
+        <button id="save-relance-btn" class="form-button">Enregistrer</button>
+    </div>
+</div>
+
+<script>
+    var userInitiales = "<?php echo $user_initiales; ?>";
+    var userId = "<?php echo $user_id; ?>";
+</script>
+<script src="scripts/script-factures.js"></script>
