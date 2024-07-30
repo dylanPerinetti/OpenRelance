@@ -4,17 +4,7 @@ CREATE DATABASE OpenRelance;
 -- Utilisation de la base de données
 USE OpenRelance;
 
--- Création des tables
-CREATE TABLE user_open_relance (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nom_user_open_relance VARCHAR(255) NOT NULL,
-    prenom_user_open_relance VARCHAR(255) NOT NULL,
-    initial_user_open_relance CHAR(2) NOT NULL,
-    type_de_profil INT NOT NULL,
-    email_user_open_relance VARCHAR(255) NOT NULL UNIQUE,
-    mot_de_passe VARCHAR(255) NOT NULL
-);
-
+-- Créer la structure de la base de données
 CREATE TABLE clients (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nom_client VARCHAR(255) NOT NULL,
@@ -31,7 +21,9 @@ CREATE TABLE contactes_clients (
     telphone_contactes_clients VARCHAR(20),
     commentaire_contactes_clients TEXT,
     id_clients INT,
-    FOREIGN KEY (id_clients) REFERENCES clients(id)
+    id_user_open_relance INT,
+    FOREIGN KEY (id_clients) REFERENCES clients(id),
+    FOREIGN KEY (id_user_open_relance) REFERENCES user_open_relance(id)
 );
 
 CREATE TABLE relance_client (
@@ -47,7 +39,7 @@ CREATE TABLE relance_client (
 CREATE TABLE factures (
     id INT AUTO_INCREMENT PRIMARY KEY,
     numeros_de_facture VARCHAR(255) NOT NULL UNIQUE,
-    date_emission_facture DATE NOT NULL, -- Nouvelle colonne ajoutée
+    date_emission_facture DATE NOT NULL,
     date_echeance_payment DATE NOT NULL,
     montant_facture DECIMAL(10, 2) NOT NULL,
     montant_reste_a_payer DECIMAL(10, 2) NOT NULL,
