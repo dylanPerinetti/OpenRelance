@@ -122,7 +122,9 @@ La base de données **OpenRelance** est conçue pour gérer les informations li�
         telphone_contactes_clients VARCHAR(20),
         commentaire_contactes_clients TEXT,
         id_clients INT,
-        FOREIGN KEY (id_clients) REFERENCES clients(id)
+        id_user_open_relance INT,
+        FOREIGN KEY (id_clients) REFERENCES clients(id),
+        FOREIGN KEY (id_user_open_relance) REFERENCES user_open_relance(id)
     );
 
     CREATE TABLE relance_client (
