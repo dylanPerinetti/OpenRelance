@@ -78,7 +78,6 @@ $current_year = $year;
     </div>
 </div>
 
-
 <div class="calendar-widget">
     <h2>Calendrier des Relances</h2>
     <div class="calendar-navigation">
@@ -150,8 +149,9 @@ $current_year = $year;
                         if (!acc[relance.relance_id]) {
                             acc[relance.relance_id] = {
                                 type_relance: relance.type_relance,
-                                nom_client: relance.nom_client,
+                                nom_client: relance.numeros_parma + ' - ' + relance.nom_client,
                                 contact_client: relance.contact_client,
+                                commentaire: relance.commentaire,
                                 factures: []
                             };
                         }
@@ -170,10 +170,12 @@ $current_year = $year;
                     for (var relanceId in relancesMap) {
                         if (relancesMap.hasOwnProperty(relanceId)) {
                             var relanceInfo = document.createElement('div');
+                            var contactClient = relancesMap[relanceId].contact_client ? `<p>Contact: ${relancesMap[relanceId].contact_client}</p>` : '';
                             relanceInfo.innerHTML = `
                                 <p>Type: ${relancesMap[relanceId].type_relance}</p>
-                                <p>Client: ${relancesMap[relanceId].nom_client || 'N/A'}</p>
-                                <p>Contact: ${relancesMap[relanceId].contact_client}</p>
+                                <p>Client: ${relancesMap[relanceId].nom_client}</p>
+                                ${contactClient}
+                                <p>Commentaire: ${relancesMap[relanceId].commentaire || 'N/A'}</p>
                                 <p>Factures:</p>
                             `;
 
@@ -213,5 +215,3 @@ $current_year = $year;
         }
     }
 </script>
-
-

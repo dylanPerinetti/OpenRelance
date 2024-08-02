@@ -13,9 +13,10 @@ $id_factures = $data['id_factures'];
 $type_relance = $data['type_relance'];
 $date_relance = $data['date_relance'];
 $id_contact_client = $data['id_contact_client'];
+$commentaire = $data['commentaire'];
 $id_user_open_relance = $_SESSION['user_id'];
 
-if (empty($type_relance) || empty($date_relance) || !is_numeric($id_factures) || !is_numeric($id_contact_client)) {
+if (empty($type_relance) || empty($date_relance) || !is_numeric($id_factures)) {
     echo json_encode(['success' => false, 'message' => 'Données invalides']);
     exit;
 }
@@ -27,13 +28,14 @@ try {
     $conn->beginTransaction();
 
     // Insérer la nouvelle relance
-    $sql = "INSERT INTO relance_client (type_relance, date_relance, id_contact_client, id_user_open_relance) 
-            VALUES (:type_relance, :date_relance, :id_contact_client, :id_user_open_relance)";
+    $sql = "INSERT INTO relance_client (type_relance, date_relance, id_contact_client, id_user_open_relance, commentaire) 
+            VALUES (:type_relance, :date_relance, :id_contact_client, :id_user_open_relance, :commentaire)";
     $stmt = $conn->prepare($sql);
     $stmt->bindParam(':type_relance', $type_relance);
     $stmt->bindParam(':date_relance', $date_relance);
     $stmt->bindParam(':id_contact_client', $id_contact_client);
     $stmt->bindParam(':id_user_open_relance', $id_user_open_relance);
+    $stmt->bindParam(':commentaire', $commentaire);
 
     if ($stmt->execute()) {
         // Obtenir l'ID de la relance insérée

@@ -88,24 +88,24 @@
 }
 
 #add-comment-form button,
-#add-relance-form button {
+#add-relance-form button,
+#open-modal-btn {
     background-color: var(--primary-color);
     color: var(--button-text-color);
-    padding: 10px 20px;
-    border: none;
-    border-radius: 10px;
+    padding: 14px 20px;
     font-size: 16px;
+    border: none;
     cursor: pointer;
-    transition: background-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-    box-shadow: 0 1px 3px var(--shadow-color);
-    max-width: 200px;
-    width: 100%;
-    text-align: center;
+    border-radius: 8px;
+    opacity: 0.8;
+    margin: 8px 0;
+    width: 20%;
 }
 
-#add-comment-form button:hover {
-    background-color: var(--primary-color-dark);
-    box-shadow: 0 4px 8px var(--shadow-color);
+#add-comment-form button:hover,
+#add-relance-form button:hover,
+#open-modal-btn:hover {
+    opacity: 1;
 }
 
 /* Formulaire d'ajout de relance */
@@ -148,11 +148,6 @@
 
 #add-relance-form button {
     align-self: center; /* Centre le bouton */
-}
-
-#add-relance-form button:hover {
-    background-color: var(--primary-color-dark);
-    box-shadow: 0 4px 8px var(--shadow-color);
 }
 
 /* Styles pour les entrées en ligne */

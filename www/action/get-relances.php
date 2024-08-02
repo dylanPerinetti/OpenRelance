@@ -11,7 +11,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             SELECT 
                 relance_client.id AS relance_id,
                 relance_client.type_relance,
+                relance_client.commentaire,
                 clients.nom_client,
+                clients.numeros_parma,
                 contactes_clients.nom_contactes_clients AS contact_client,
                 factures.id AS facture_id,
                 factures.numeros_de_facture,

@@ -53,8 +53,9 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     function processCSV(content) {
+        const delimiter = content.includes(';') ? ';' : ',';
         const rows = content.split('\n').filter(row => row.trim() !== '');
-        const header = rows[0].split(',').map(col => col.trim());
+        const header = rows[0].split(delimiter).map(col => col.trim());
         const requiredHeaders = ["Customer Number", "Customer Name", "Document Date", "Reference", "Due Date", "Currency", "Amount in Local Cur"];
 
         if (!requiredHeaders.every(col => header.includes(col))) {
@@ -65,17 +66,24 @@ document.addEventListener('DOMContentLoaded', function() {
         const previewTbody = document.querySelector('#balance-preview-table tbody');
         previewTbody.innerHTML = '';
 
-        const dataRows = rows.slice(1).map(row => parseCSVRow(row));
+        const dataRows = rows.slice(1).map(row => parseCSVRow(row, delimiter));
+        const references = dataRows.map(row => row[header.indexOf('Reference')]);
+
+        if (references.length === 0) {
+            showAlert('Le fichier CSV ne contient aucune référence de facture.', 'warning');
+            return;
+        }
+
         fetch('action/check-balance-refs.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ references: dataRows.map(row => row[header.indexOf('Reference')]) })
+            body: JSON.stringify({ references: references })
         })
         .then(response => response.json())
         .then(existingRefs => {
-            const validRows = dataRows.filter(row => !existingRefs.includes(row[header.indexOf('Reference')]));
+            const validRows = dataRows.filter(row => existingRefs.some(ref => ref.numeros_de_facture === row[header.indexOf('Reference')]));
             validRows.forEach(row => {
-                const amount = parseFloat(row[header.indexOf('Amount in Local Cur')].replace(/"/g, '').replace(/,/g, ''));
+                const amount = parseFloat(row[header.indexOf('Amount in Local Cur')].replace(/"/g, '').replace(/\s/g, '').replace(/,/g, '.'));
                 const documentDate = convertDateFormat(row[header.indexOf('Document Date')]);
                 const dueDate = convertDateFormat(row[header.indexOf('Due Date')]);
                 const tr = document.createElement('tr');
@@ -90,6 +98,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 previewTbody.appendChild(tr);
             });
 
+            if (validRows.length === 0) {
+                showAlert('Aucune facture valide trouvée dans le fichier CSV.', 'warning');
+                return;
+            }
+
             document.getElementById('balance-preview-modal').style.display = 'block';
 
             document.getElementById('confirm-import-preview').addEventListener('click', function() {
@@ -99,8 +112,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     documentDate: convertDateFormat(row[header.indexOf('Document Date')]),
                     reference: row[header.indexOf('Reference')],
                     dueDate: convertDateFormat(row[header.indexOf('Due Date')]),
-                    amount: parseFloat(row[header.indexOf('Amount in Local Cur')].replace(/"/g, '').replace(/,/g, ''))
-                })));
+                    amount: parseFloat(row[header.indexOf('Amount in Local Cur')].replace(/"/g, '').replace(/\s/g, '').replace(/,/g, '.'))
+                })), existingRefs);
             });
 
             document.getElementById('cancel-import-preview').addEventListener('click', function() {
@@ -113,7 +126,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    function parseCSVRow(row) {
+    function parseCSVRow(row, delimiter) {
         const result = [];
         let insideQuote = false;
         let value = '';
@@ -121,7 +134,7 @@ document.addEventListener('DOMContentLoaded', function() {
         for (let char of row) {
             if (char === '"') {
                 insideQuote = !insideQuote;
-            } else if (char === ',' && !insideQuote) {
+            } else if (char === delimiter && !insideQuote) {
                 result.push(value.trim());
                 value = '';
             } else {
@@ -138,11 +151,12 @@ document.addEventListener('DOMContentLoaded', function() {
         return `${year}-${month}-${day}`;
     }
 
-    function importBalance(dataRows) {
+    function importBalance(dataRows, existingRefs) {
+        const referencesInCSV = dataRows.map(row => row.reference);
         fetch('action/add-balance-csv.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ data: dataRows })
+            body: JSON.stringify({ data: dataRows, existingRefs: existingRefs })
         })
         .then(response => response.json())
         .then(data => {

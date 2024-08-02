@@ -8,10 +8,16 @@ $references = $data['references'];
 
 $response = [];
 
+if (empty($references)) {
+    echo json_encode($response);
+    exit;
+}
+
 try {
-    $stmt = $conn->prepare("SELECT numeros_de_facture FROM factures WHERE numeros_de_facture IN (" . implode(',', array_fill(0, count($references), '?')) . ")");
+    $placeholders = implode(',', array_fill(0, count($references), '?'));
+    $stmt = $conn->prepare("SELECT numeros_de_facture, montant_reste_a_payer FROM factures WHERE numeros_de_facture IN ($placeholders)");
     $stmt->execute($references);
-    $existingRefs = $stmt->fetchAll(PDO::FETCH_COLUMN);
+    $existingRefs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     $response = $existingRefs;
 } catch (PDOException $e) {

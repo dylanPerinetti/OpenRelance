@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function() {
+﻿document.addEventListener('DOMContentLoaded', function() {
     fetchContacts();
 
     const addContactBtn = document.getElementById('add-contact-btn');
@@ -117,7 +117,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <td>${contact.nom_contactes_clients}</td>
                         <td>${contact.fonction_contactes_clients}</td>
                         <td class="copy-to-clipboard" data-phone="${contact.telphone_contactes_clients}">${contact.telphone_contactes_clients}</td>
-                        <td><a href="mailto:${contact.mail_contactes_clients}?subject=${contact.numeros_parma}- ${contact.nom_client} - Relance">${contact.mail_contactes_clients}</a></td>
+                        <td><a href="mailto:${contact.mail_contactes_clients}?cc=fabien.mathely@volvo.com&subject=${contact.numeros_parma}- ${contact.nom_client} - Relance">${contact.mail_contactes_clients}</a></td>
                         <td>${userData ? userData.initial_user_open_relance : 'N/A'}</td>
                         `;
                         row.addEventListener('click', function() {

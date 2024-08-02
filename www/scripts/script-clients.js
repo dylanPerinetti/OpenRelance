@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const confirmationModal = document.getElementById('confirmation-modal');
     const csvPreviewModal = document.getElementById('csv-preview-modal');
     const alertContainer = document.getElementById('alert-container');
+    const clientsTable = document.querySelector('.clients-table');
 
     document.getElementById('import-csv-btn').addEventListener('click', () => document.getElementById('csv-file-input').click());
     document.getElementById('csv-file-input').addEventListener('change', handleFileSelect);
@@ -16,6 +17,16 @@ document.addEventListener('DOMContentLoaded', function() {
     window.addEventListener('click', event => {
         if (event.target === confirmationModal) confirmationModal.style.display = 'none';
         if (event.target === csvPreviewModal) csvPreviewModal.style.display = 'none';
+    });
+
+    let sortDirection = {
+        numeros_parma: true,
+        nom_client: true,
+        montant_du: true
+    };
+
+    clientsTable.querySelectorAll('th[data-column]').forEach(th => {
+        th.addEventListener('click', () => sortTable(th.dataset.column));
     });
 
     fetchClients();
@@ -43,7 +54,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        fetch('action/get-clients.php')
+        fetch('action/get-client-data.php')
             .then(response => response.json())
             .then(existingClients => {
                 rows.slice(1).forEach(row => {
@@ -163,29 +174,21 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function fetchClients() {
-        fetch('action/get-clients.php')
+        fetch('action/get-client-data.php')
             .then(response => response.json())
             .then(data => {
                 const tbody = document.getElementById('clients-tbody');
                 tbody.innerHTML = '';
                 if (data.length > 0) {
                     data.forEach(client => {
-                        fetch('action/get-user-initial.php', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ id_user: client.id_user_open_relance })
-                        })
-                        .then(response => response.json())
-                        .then(userData => {
-                            const row = document.createElement('tr');
-                            row.innerHTML = `
-                                <td>${client.numeros_parma}</td>
-                                <td>${client.nom_client}</td>
-                                <td>${userData.initial_user_open_relance}</td>
-                            `;
-                            row.addEventListener('click', () => window.location.href = `client.php?id=${client.id}`);
-                            tbody.appendChild(row);
-                        });
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${client.numeros_parma}</td>
+                            <td>${client.nom_client}</td>
+                            <td class="montant-du">${formatCurrency(client.montant_du)}</td>
+                        `;
+                        row.addEventListener('click', () => window.location.href = `client.php?id=${client.id}`);
+                        tbody.appendChild(row);
                     });
                 } else {
                     tbody.innerHTML = '<tr><td colspan="3">Aucun client trouvé</td></tr>';
@@ -232,5 +235,39 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function isNumber(value) {
         return /^\d+$/.test(value);
+    }
+
+    function formatCurrency(value) {
+        const formattedValue = parseFloat(value).toLocaleString('fr-FR', {
+            style: 'currency',
+            currency: 'EUR'
+        });
+        return formattedValue.replace(/\s/g, '\u00A0'); // Utiliser un espace insécable
+    }
+
+    function sortTable(column) {
+        const table = document.querySelector('.clients-table tbody');
+        const rows = Array.from(table.rows);
+        const columnIdx = {
+            'numeros_parma': 0,
+            'nom_client': 1,
+            'montant_du': 2
+        }[column];
+
+        const direction = sortDirection[column] ? 1 : -1;
+        sortDirection[column] = !sortDirection[column];
+
+        const sortedRows = rows.sort((a, b) => {
+            const aText = a.cells[columnIdx].textContent.replace('€', '').replace(/\s/g, '');
+            const bText = b.cells[columnIdx].textContent.replace('€', '').replace(/\s/g, '');
+
+            if (column === 'montant_du') {
+                return (parseFloat(aText) - parseFloat(bText)) * direction;
+            }
+            return aText.localeCompare(bText) * direction;
+        });
+
+        table.innerHTML = '';
+        sortedRows.forEach(row => table.appendChild(row));
     }
 });

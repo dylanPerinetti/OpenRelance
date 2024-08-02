@@ -219,7 +219,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 const contactSelect = document.getElementById('contact-client');
-                contactSelect.innerHTML = '<option value="">Sélectionner un contact</option>';
+                contactSelect.innerHTML = '<option value="">Sélectionner un contact (optionnel)</option>';
                 data.forEach(contact => {
                     const option = document.createElement('option');
                     option.value = contact.id;
@@ -322,9 +322,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const relanceType = document.getElementById('relance-type').value;
         const relanceDate = document.getElementById('relance-date').value;
         const contactClientId = document.getElementById('contact-client').value;
+        const relanceComment = document.getElementById('relance-comment').value;
 
-        if (relanceType.trim() === '' || relanceDate.trim() === '' || contactClientId === '') {
-            showAlert("Tous les champs de la relance doivent être remplis.", 'warning');
+        if (relanceType.trim() === '' || relanceDate.trim() === '') {
+            showAlert("Les champs type de relance et date de relance doivent être remplis.", 'warning');
             return;
         }
 
@@ -335,7 +336,14 @@ document.addEventListener('DOMContentLoaded', function() {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ factures: selectedFactureIds, relanceType: relanceType, relanceDate: relanceDate, contactId: contactClientId, userId: userId })
+            body: JSON.stringify({ 
+                factures: selectedFactureIds, 
+                relanceType: relanceType, 
+                relanceDate: relanceDate, 
+                contactId: contactClientId || null, 
+                commentaire: relanceComment, 
+                userId: userId 
+            })
         })
         .then(response => response.json())
         .then(data => {
@@ -367,6 +375,37 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    const markAsPaidBtn = document.getElementById('mark-as-paid-btn');
+
+    markAsPaidBtn.addEventListener('click', () => {
+        if (selectedFactures.size > 0) {
+            const selectedFactureIds = Array.from(selectedFactures);
+
+            fetch('action/mark-as-paid.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ factures: selectedFactureIds })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert("Facture(s) marquée(s) comme payée(s) avec succès.", 'success');
+                    fetchFactures();
+                } else {
+                    showAlert(data.message, 'danger');
+                }
+            })
+            .catch(error => {
+                console.error('Error marking as paid:', error);
+                showAlert("Erreur lors de la mise à jour des factures.", 'danger');
+            });
+        } else {
+            showAlert("Veuillez sélectionner au moins une facture.", 'warning');
+        }
+    });
+
     fetchFactures();
 
     // Fonction d'affichage des alertes
@@ -389,5 +428,6 @@ document.addEventListener('DOMContentLoaded', function() {
             div.style.opacity = '0';
             setTimeout(() => div.remove(), 600);
         });
+   
     }
 });

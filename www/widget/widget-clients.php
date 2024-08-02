@@ -1,6 +1,6 @@
-<?php 
-    $user_initiales = htmlspecialchars($_SESSION['user_initiales'], ENT_QUOTES, 'UTF-8');
-    $user_id = htmlspecialchars($_SESSION['user_id'], ENT_QUOTES, 'UTF-8');
+﻿<?php
+$user_initiales = htmlspecialchars($_SESSION['user_initiales'], ENT_QUOTES, 'UTF-8');
+$user_id = htmlspecialchars($_SESSION['user_id'], ENT_QUOTES, 'UTF-8');
 ?>
 <div class="widget-content">
     <div class="button-container">
@@ -12,9 +12,9 @@
     <table class="clients-table">
         <thead>
             <tr>
-                <th><i class="fas fa-hashtag"></i> Numéro Parma</th>
-                <th><i class="fas fa-building"></i> Nom</th>
-                <th><i class="fas fa-user"></i> Ajouté par</th>
+                <th data-column="numeros_parma"><i class="fas fa-hashtag"></i> Numéro Parma</th>
+                <th data-column="nom_client"><i class="fas fa-building"></i> Nom</th>
+                <th data-column="montant_du" style="text-align: right;"><i class="fas fa-money-bill-wave"></i> Montant dû</th>
             </tr>
             <tr>
                 <td><input type="text" id="new-client-parma" placeholder="Numéro Parma" class="inline-input"></td>
@@ -28,11 +28,6 @@
             </tr>
         </tbody>
     </table>
-
-    <script>
-        var userInitiales = "<?php echo $user_initiales; ?>";
-        var userId = "<?php echo $user_id; ?>";
-    </script>
     <script src="scripts/script-clients.js"></script>
 </div>
 
@@ -76,5 +71,13 @@
 
 .parma-exists {
     background-color: #ffebcc; /* Orange pâle */
+}
+
+.clients-table th {
+    cursor: pointer;
+}
+
+.clients-table td.montant-du {
+    text-align: right;
 }
 </style>

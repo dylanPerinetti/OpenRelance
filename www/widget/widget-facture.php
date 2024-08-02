@@ -1,4 +1,4 @@
-<div class="widget-content">
+﻿<div class="widget-content">
     <h1>Détails de la Facture</h1>
     <div class="facture-details">
         <div class="box gauge-box">
@@ -20,31 +20,8 @@
         </div>
     </div>
     <?php if ($facture['montant_reste_a_payer'] > 0): ?>
-        <h2>Programmer une Relance</h2>
-        <form id="add-relance-form">
-            <label for="relance-type">Type de Relance :</label>
-            <select id="relance-type" required>
-                <option value="">Sélectionner un type de relance</option>
-                <option value="Consulter les reglements">Consulter les règlements</option>
-                <option value="mail">Mail</option>
-                <option value="appel">Appel</option>
-                <option value="courrier 1">Courrier 1</option>
-                <option value="courrier 2">Courrier 2</option>
-                <option value="recommandé">Recommandé</option>
-            </select>
-            <label for="relance-contact">Contact :</label>
-            <select id="relance-contact" required>
-                <option value="">Sélectionner un contact</option>
-                <?php foreach ($contacts as $contact): ?>
-                    <option value="<?php echo $contact['id']; ?>">
-                        <?php echo htmlspecialchars($contact['fonction_contactes_clients'] . ' - ' . $contact['nom_contactes_clients']); ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-            <label for="relance-date">Date de Relance :</label>
-            <input type="date" id="relance-date" required>
-            <button type="submit">Ajouter</button>
-        </form>
+        <h2>Programmer un Rappel</h2>
+        <button id="open-modal-btn">Ajouter un Rappel</button>
     <?php endif; ?>
 
     <h2>Commentaires</h2>
@@ -64,3 +41,34 @@
     </script>
     <script src="scripts/script-facture.js"></script>
 </div>
+    <!-- Modal pour ajouter des relances -->
+    <div id="relance-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Ajouter une relance</h2>
+            <label for="relance-type">Type de relance:</label>
+            <select id="relance-type" class="form-input" required>
+                <option value="Reglement à recevoir">Consulter les Règlements</option>
+                <option value="Appel">Appel</option>
+                <option value="mail">Mail</option>
+                <option value="courier 1">Courier 1</option>
+                <option value="courier 2">Courier 2</option>
+                <option value="recommandé">Recommandé</option>
+                <option value="litige">Litige</option>
+            </select>
+            <label for="contact-client">Contact Client (optionnel):</label>
+            <select id="contact-client" class="form-input">
+                <option value="">Sélectionner un contact (optionnel)</option>
+                <?php foreach ($contacts as $contact): ?>
+                    <option value="<?php echo $contact['id']; ?>">
+                        <?php echo htmlspecialchars($contact['fonction_contactes_clients'] . ' - ' . $contact['nom_contactes_clients']); ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+            <label for="relance-date">Date de relance:</label>
+            <input type="date" id="relance-date" class="form-input" required>
+            <label for="relance-comment">Commentaire:</label>
+            <textarea id="relance-comment" rows="4" cols="50" placeholder="Ajouter votre commentaire ici..." class="form-input"></textarea>
+            <button id="save-relance-btn" class="form-button">Enregistrer</button>
+        </div>
+    </div>
