@@ -26,7 +26,7 @@
                     <input type="text" id="new-contact-client" placeholder="Client" class="inline-input" list="client-suggestions">
                     <datalist id="client-suggestions"></datalist>
                 </td>
-                <td><input type="text" id="new-contact-name" placeholder="Nom" class="inline-input" value="NaN"></td>
+                <td><input type="text" id="new-contact-name" placeholder="Nom" class="inline-input"></td>
                 <td>
                     <select id="new-contact-function" class="inline-input">
                         <option value="">Sélectionner</option>

@@ -57,6 +57,13 @@ document.addEventListener('DOMContentLoaded', function() {
         renderFactures(filteredData);
     };
 
+    const isPastDue = (dateStr) => {
+        const date = new Date(dateStr);
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        return date < yesterday;
+    };
+
     const renderFactures = (data) => {
         const tbody = document.getElementById('factures-tbody');
         tbody.innerHTML = '';
@@ -65,7 +72,15 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (paginatedData.length > 0) {
             paginatedData.forEach(facture => {
-                const statusColor = facture.montant_reste_a_payer == 0 ? 'green' : 'orange';
+                let statusColor;
+                if (facture.montant_reste_a_payer == 0) {
+                    statusColor = 'green';
+                } else if (isPastDue(facture.date_echeance_payment)) {
+                    statusColor = 'blue';
+                } else {
+                    statusColor = 'orange';
+                }
+
                 const row = document.createElement('tr');
                 row.classList.add('facture-row');
                 row.dataset.href = `facture.php?id=${facture.id}`;
@@ -428,6 +443,5 @@ document.addEventListener('DOMContentLoaded', function() {
             div.style.opacity = '0';
             setTimeout(() => div.remove(), 600);
         });
-   
     }
 });

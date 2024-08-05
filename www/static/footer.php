@@ -10,6 +10,7 @@
         <div class="footer-section links">
             <h3>Liens utiles</h3>
             <ul>
+                <li><a href="index.php">Accueil</a></li>
                 <li><a href="clients.php">Clients</a></li>
                 <li><a href="factures.php">Factures</a></li>
                 <li><a href="admin.php">Administrateur</a></li>

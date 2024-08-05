@@ -12,13 +12,15 @@ $user_id = $_SESSION['user_id'];
         <p>Chargement des relances...</p>
     </div>
     <h2>Factures</h2>
+    <p id="total-unpaid-due">Total Impayé à ce jour: <strong>0,00 €</strong></p>
     <p id="total-due">Total dû à ce jour: <strong>0,00 €</strong></p>
-    <p id="unpaid-count">Il y a 0 facture(s) impayée(s) à ce jour.</p>
+    <p id="unpaid-count">Il y a 0 facture(s) dont 0 impayée(s) à ce jour.</p>
     <button id="select-toggle-btn" class="form-button">Sélectionner</button>
     <button id="add-comment-btn" class="form-button">Ajouter un commentaire</button>
     <button id="add-relance-btn" class="form-button">Ajouter une relance</button>
     <button id="mark-as-paid-btn" class="form-button">Marquer comme payé</button>
     <h3>Factures Impayées</h3>
+    <p id="selected-total-unpaid-due" style="text-align: right;">Total sélectionné impayé: <strong>0,00 €</strong></p>
     <table class="factures-table">
         <thead>
             <tr>
@@ -94,7 +96,7 @@ $user_id = $_SESSION['user_id'];
         <h2>Ajouter une relance</h2>
         <label for="relance-type">Type de relance:</label>
         <select id="relance-type" class="form-input">
-            <option value="Reglement à recevoir">Consulter les Règlement</option>
+            <option value="Suivre le Règlement">Suivre le Règlement</option>
             <option value="Appel">Appel</option>
             <option value="mail">Mail</option>
             <option value="courier 1">Courier 1</option>

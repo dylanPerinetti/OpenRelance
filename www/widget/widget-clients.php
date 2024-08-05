@@ -7,24 +7,27 @@ $user_id = htmlspecialchars($_SESSION['user_id'], ENT_QUOTES, 'UTF-8');
         <button id="import-csv-btn" class="form-button">Importer CSV</button>
         <button id="export-csv-btn" class="form-button">Exporter CSV</button>
         <input type="file" id="csv-file-input" style="display: none;">
+        <div id="total-impayes" style="font-weight: bold;padding-left:80px; font-size: 20px; text-align: center;display: inline-block;">
+            Total général des impayés: <span style="font-size: 25px;" id="total-impayes-value">0€</span>
+        </div>
     </div>
-    <div id="alert-container"></div>
     <table class="clients-table">
         <thead>
             <tr>
                 <th data-column="numeros_parma"><i class="fas fa-hashtag"></i> Numéro Parma</th>
                 <th data-column="nom_client"><i class="fas fa-building"></i> Nom</th>
-                <th data-column="montant_du" style="text-align: right;"><i class="fas fa-money-bill-wave"></i> Montant dû</th>
+                <th data-column="nb_factures_non_payees" style="text-align: center;"><i class="fas fa-file-invoice"></i> Nb Factures Non Payées</th>
+                <th data-column="montant_du" style="text-align: right;"><i class="fas fa-euro-sign"></i> Montant dû</th>
             </tr>
             <tr>
                 <td><input type="text" id="new-client-parma" placeholder="Numéro Parma" class="inline-input"></td>
                 <td><input type="text" id="new-client-name" placeholder="Nom" class="inline-input"></td>
-                <td><button id="add-client-btn" class="form-button">Enregistrer</button></td>
+                <td colspan="3"><button id="add-client-btn" class="form-button">Enregistrer</button></td>
             </tr>
         </thead>
         <tbody id="clients-tbody">
             <tr>
-                <td colspan="3">Chargement des données...</td>
+                <td colspan="4">Chargement des données...</td>
             </tr>
         </tbody>
     </table>
@@ -65,19 +68,19 @@ $user_id = htmlspecialchars($_SESSION['user_id'], ENT_QUOTES, 'UTF-8');
 </div>
 
 <style>
-.client-exists {
-    background-color: #ffcccc; /* Rouge pâle */
-}
+    .client-exists {
+        background-color: #ffcccc; /* Rouge pâle */
+    }
 
-.parma-exists {
-    background-color: #ffebcc; /* Orange pâle */
-}
+    .parma-exists {
+        background-color: #ffebcc; /* Orange pâle */
+    }
 
-.clients-table th {
-    cursor: pointer;
-}
+    .clients-table th {
+        cursor: pointer;
+    }
 
-.clients-table td.montant-du {
-    text-align: right;
-}
+    .clients-table td.montant-du {
+        text-align: right;
+    }
 </style>

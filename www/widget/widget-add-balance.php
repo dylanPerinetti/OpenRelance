@@ -2,7 +2,7 @@
 $user_initiales = htmlspecialchars($_SESSION['user_initiales'], ENT_QUOTES, 'UTF-8');
 ?>
 <div class="widget-content">
-    <button id="show-import-balance-form" class="form-button">Importer balance (From SAP)</button>
+    <button id="show-import-balance-form" class="form-button">Mettre à jour la balance (Import SAP)</button>
     
     <form id="import-balance-form" style="display: none;">
         <div class="form-group">

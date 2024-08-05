@@ -18,14 +18,15 @@ $user_id = $_SESSION['user_id'];
         <!-- Ajout du filtre par date d'échéance -->
         <label for="date-echeance-filter">Date d'échéance avant :</label>
         <input type="date" id="date-echeance-filter" class="form-input" value="<?php echo date('Y-m-d', strtotime('+10 days')); ?>">
-
         <label for="items-per-page">Factures par page:</label>
         <select id="items-per-page" class="form-input">
             <option value="5">5</option>
             <option value="10">10</option>
             <option value="20">20</option>
-            <option value="50" selected>50</option>
+            <option value="50">50</option>
             <option value="100">100</option>
+            <option value="250"selected>250</option>
+            <option value="500">500</option>
         </select>
     </div>
     <button id="select-toggle-btn" class="form-button">Sélectionner</button>
@@ -74,7 +75,7 @@ $user_id = $_SESSION['user_id'];
         <h2>Ajouter une relance</h2>
         <label for="relance-type">Type de relance:</label>
         <select id="relance-type" class="form-input" required>
-            <option value="Reglement à recevoir">Consulter les Règlements</option>
+            <option value="Suivre le Règlement">Suivre le Règlement</option>
             <option value="Appel">Appel</option>
             <option value="mail">Mail</option>
             <option value="courier 1">Courier 1</option>

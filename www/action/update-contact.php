@@ -2,7 +2,7 @@
 session_start();
 include '../connexion/mysql-db-config.php';
 
-$modifyConn = get_db_connection('modify');
+$modifyConn = get_db_connection('add');
 $data = json_decode(file_get_contents('php://input'), true);
 
 $id = $data['id'];

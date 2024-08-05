@@ -6,7 +6,7 @@
     const exportContactsBtn = document.getElementById('export-contacts-btn');
     const contactsCsvFile = document.getElementById('contacts-csv-file');
     const contactModal = document.getElementById('contact-modal');
-    const closeModalBtn = document.querySelector('.close');
+    const closeModalBtn = contactModal.querySelector('.close');
     const editContactBtn = document.getElementById('edit-contact-btn');
     const saveContactBtn = document.getElementById('save-contact-btn');
 
@@ -31,10 +31,10 @@
         const phone = document.getElementById('new-contact-phone').value;
         const email = document.getElementById('new-contact-email').value;
 
-        if (parma && client && name && functionContact && phone && email) {
+        if (parma && client && (phone || email)) {
             addContact(parma, client, name, functionContact, phone, email);
         } else {
-            showAlert('Veuillez remplir tous les champs.', 'warning');
+            showAlert('Veuillez remplir au moins le téléphone ou l\'email.', 'warning');
         }
     });
 
@@ -111,12 +111,13 @@
                     .then(userData => {
                         const row = document.createElement('tr');
                         row.dataset.contactId = contact.id;
+                        const formattedPhone = formatPhoneNumber(contact.telphone_contactes_clients);
                         row.innerHTML = `
                         <td>${contact.numeros_parma}</td>
                         <td>${contact.nom_client}</td>
                         <td>${contact.nom_contactes_clients}</td>
                         <td>${contact.fonction_contactes_clients}</td>
-                        <td class="copy-to-clipboard" data-phone="${contact.telphone_contactes_clients}">${contact.telphone_contactes_clients}</td>
+                        <td class="copy-to-clipboard" data-phone="${formattedPhone}">${formattedPhone}</td>
                         <td><a href="mailto:${contact.mail_contactes_clients}?cc=fabien.mathely@volvo.com&subject=${contact.numeros_parma}- ${contact.nom_client} - Relance">${contact.mail_contactes_clients}</a></td>
                         <td>${userData ? userData.initial_user_open_relance : 'N/A'}</td>
                         `;
@@ -151,7 +152,7 @@
             const tdClient = row.cells[1].textContent.toUpperCase();
             const tdName = row.cells[2].textContent.toUpperCase();
             const tdFunction = row.cells[3].textContent;
-            const tdPhone = row.cells[4].textContent;
+            const tdPhone = row.cells[4].textContent.replace(/\s/g, '');
             const tdEmail = row.cells[5].textContent.toUpperCase();
 
             if (tdParma.includes(parma) && tdClient.includes(client) && tdName.includes(name) && tdFunction.includes(functionContact) && tdPhone.includes(phone) && tdEmail.includes(email)) {
@@ -350,6 +351,10 @@
                 filterContacts(); // Update filtering based on selection
             }
         });
+    }
+
+    function formatPhoneNumber(phoneNumber) {
+        return phoneNumber.replace(/(\d{2})(?=\d)/g, '$1 ').trim();
     }
 
     autocompleteClient();

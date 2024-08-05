@@ -122,8 +122,8 @@ $current_year = $year;
 
 <script>
     // Gestion de la modal
-    var modal = document.getElementById("relanceModal");
-    var span = document.getElementsByClassName("close")[0];
+    var relanceModal = document.getElementById("relanceModal");
+    const closeModal = relanceModal.querySelector('.close');
 
     // Ouvrir la modal lorsqu'une case du calendrier est cliquée
     document.querySelectorAll('.calendar-cell').forEach(cell => {
@@ -199,19 +199,18 @@ $current_year = $year;
                 console.error('Erreur:', error);
             });
 
-            modal.style.display = "block";
+            relanceModal.style.display = "block";
         });
     });
 
-    // Fermer la modal lorsqu'on clique sur la croix
-    span.onclick = function() {
-        modal.style.display = "none";
-    }
+    closeModal.addEventListener('click', () => {
+        relanceModal.style.display = 'none';
+    });
 
     // Fermer la modal lorsqu'on clique en dehors de la modal
     window.onclick = function(event) {
-        if (event.target == modal) {
-            modal.style.display = "none";
+        if (event.target == relanceModal) {
+            relanceModal.style.display = "none";
         }
     }
 </script>

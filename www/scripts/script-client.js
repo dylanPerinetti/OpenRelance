@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
     fetchClientFactures();
     fetchClientContacts();
     fetchClientRelances();
-
+    
     function fetchClientInfo() {
         fetch('action/get-client-info.php', {
             method: 'POST',
@@ -47,13 +47,20 @@ document.addEventListener('DOMContentLoaded', function() {
             const impayeesTbody = document.getElementById('factures-impayees-tbody');
             const payeesTbody = document.getElementById('factures-payees-tbody');
             let totalDue = 0;
+            let totalUnpaidDue = 0;
+            let unpaidCount = 0;
+            let unpaidPastDueCount = 0;
             const today = new Date();
+            const yesterday = new Date();
+            yesterday.setDate(today.getDate() - 1);
 
             impayeesTbody.innerHTML = ''; // Clear the loading message
             payeesTbody.innerHTML = ''; // Clear the loading message
 
             if (data.length > 0) {
-                let unpaidCount = 0;
+                // Trier les factures par date d'échéance
+                data.sort((a, b) => new Date(a.date_echeance_payment) - new Date(b.date_echeance_payment));
+
                 data.forEach(facture => {
                     const row = document.createElement('tr');
                     let statusColor = '';
@@ -81,7 +88,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <td style="text-align:right;">${formatMontant(facture.montant_reste_a_payer)} €</td>
                     `;
                     row.addEventListener('click', function(event) {
-                        if (selectionMode) {
+                        if (selectionMode && !event.target.classList.contains('select-facture')) {
                             event.stopPropagation();
                             const checkbox = row.querySelector('.select-facture');
                             checkbox.checked = !checkbox.checked;
@@ -90,7 +97,8 @@ document.addEventListener('DOMContentLoaded', function() {
                             } else {
                                 selectedFactures.delete(facture.id);
                             }
-                        } else {
+                            updateSelectedTotalUnpaidDue();
+                        } else if (!selectionMode) {
                             window.location.href = `facture.php?id=${facture.id}`;
                         }
                     });
@@ -99,6 +107,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         impayeesTbody.appendChild(row);
                         totalDue += parseFloat(facture.montant_reste_a_payer);
                         unpaidCount++;
+                        if (new Date(facture.date_echeance_payment) < yesterday) {
+                            totalUnpaidDue += parseFloat(facture.montant_reste_a_payer);
+                            unpaidPastDueCount++;
+                        }
                     } else {
                         row.removeChild(row.lastChild); // Remove the "Montant à Payer Restant" column
                         payeesTbody.appendChild(row);
@@ -106,7 +118,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
 
                 document.getElementById('total-due').innerHTML = `Total dû à ce jour: <strong>${formatMontant(totalDue)} €</strong>`;
-                document.getElementById('unpaid-count').innerHTML = `Il y a <strong>${unpaidCount} </strong> facture(s) impayée(s) à ce jour.`;
+                document.getElementById('total-unpaid-due').innerHTML = `Total Impayé à ce jour: <strong>${formatMontant(totalUnpaidDue)} €</strong>`;
+                if (totalUnpaidDue != 0) {
+                    document.getElementById('total-unpaid-due').style.color = 'red';
+                } else {
+                    document.getElementById('total-unpaid-due').style.color = 'black';
+                }
+                document.getElementById('unpaid-count').innerHTML = `Il y a <strong>${unpaidCount}</strong> facture(s) dont <strong>${unpaidPastDueCount}</strong> impayée(s) à ce jour.`;
 
                 // Sort paid invoices by emission date
                 const payeesRows = Array.from(payeesTbody.querySelectorAll('tr'));
@@ -206,6 +224,18 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    function updateSelectedTotalUnpaidDue() {
+    let totalSelectedUnpaidDue = 0;
+    document.querySelectorAll('#factures-impayees-tbody .select-facture:checked').forEach(checkbox => {
+        const row = checkbox.closest('tr');
+        const montantText = row.cells[6].innerText.replace(' €', '').replace(/\s/g, '').replace(',', '.');
+        const montant = parseFloat(montantText);
+        totalSelectedUnpaidDue += montant;
+    });
+    document.getElementById('selected-total-unpaid-due').innerHTML = `Total sélectionné impayé: <strong>${totalSelectedUnpaidDue.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €</strong>`;
+}
+
+
     document.getElementById('select-all').addEventListener('change', function() {
         const checkboxes = document.querySelectorAll('#factures-impayees-tbody .select-facture');
         const isChecked = this.checked;
@@ -217,6 +247,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 selectedFactures.delete(checkbox.dataset.id);
             }
         });
+        updateSelectedTotalUnpaidDue();
     });
 
     document.getElementById('select-all-paid').addEventListener('change', function() {
@@ -230,6 +261,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 selectedFactures.delete(checkbox.dataset.id);
             }
         });
+        updateSelectedTotalUnpaidDue();
     });
 
     document.getElementById('factures-impayees-tbody').addEventListener('change', function(event) {
@@ -240,6 +272,7 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 selectedFactures.delete(factureId);
             }
+            updateSelectedTotalUnpaidDue();
         }
     });
 
@@ -251,6 +284,35 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 selectedFactures.delete(factureId);
             }
+            updateSelectedTotalUnpaidDue();
+        }
+    });
+
+    document.getElementById('factures-impayees-tbody').addEventListener('click', function(event) {
+        const target = event.target;
+        if (selectionMode && !target.classList.contains('select-facture')) {
+            const checkbox = target.closest('tr').querySelector('.select-facture');
+            checkbox.checked = !checkbox.checked;
+            if (checkbox.checked) {
+                selectedFactures.add(checkbox.dataset.id);
+            } else {
+                selectedFactures.delete(checkbox.dataset.id);
+            }
+            updateSelectedTotalUnpaidDue();
+        }
+    });
+
+    document.getElementById('factures-payees-tbody').addEventListener('click', function(event) {
+        const target = event.target;
+        if (selectionMode && !target.classList.contains('select-facture')) {
+            const checkbox = target.closest('tr').querySelector('.select-facture');
+            checkbox.checked = !checkbox.checked;
+            if (checkbox.checked) {
+                selectedFactures.add(checkbox.dataset.id);
+            } else {
+                selectedFactures.delete(checkbox.dataset.id);
+            }
+            updateSelectedTotalUnpaidDue();
         }
     });
 

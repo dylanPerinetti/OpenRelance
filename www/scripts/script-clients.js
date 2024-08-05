@@ -22,6 +22,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let sortDirection = {
         numeros_parma: true,
         nom_client: true,
+        nb_factures_non_payees: true,
         montant_du: true
     };
 
@@ -55,25 +56,25 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         fetch('action/get-client-data.php')
-            .then(response => response.json())
-            .then(existingClients => {
-                rows.slice(1).forEach(row => {
-                    const cols = row.split(',');
-                    if (cols.length > Math.max(parmaIndex, nameIndex)) {
-                        const clientName = cols[nameIndex].trim().toUpperCase();
-                        const parmaNumber = cols[parmaIndex].trim();
+        .then(response => response.json())
+        .then(existingClients => {
+            rows.slice(1).forEach(row => {
+                const cols = row.split(',');
+                if (cols.length > Math.max(parmaIndex, nameIndex)) {
+                    const clientName = cols[nameIndex].trim().toUpperCase();
+                    const parmaNumber = cols[parmaIndex].trim();
 
-                        if (clientName && parmaNumber && isNumber(parmaNumber)) {
-                            const tr = document.createElement('tr');
-                            tr.className = existingClients.some(client => client.nom_client === clientName) ? 'client-exists' :
-                                existingClients.some(client => client.numeros_parma === parmaNumber) ? 'parma-exists' : '';
-                            tr.innerHTML = `<td>${parmaNumber}</td><td>${clientName}</td>`;
-                            previewTbody.appendChild(tr);
-                        }
+                    if (clientName && parmaNumber && isNumber(parmaNumber)) {
+                        const tr = document.createElement('tr');
+                        tr.className = existingClients.some(client => client.nom_client === clientName) ? 'client-exists' :
+                        existingClients.some(client => client.numeros_parma === parmaNumber) ? 'parma-exists' : '';
+                        tr.innerHTML = `<td>${parmaNumber}</td><td>${clientName}</td>`;
+                        previewTbody.appendChild(tr);
                     }
-                });
-                csvPreviewModal.style.display = 'block';
+                }
             });
+            csvPreviewModal.style.display = 'block';
+        });
     }
 
     function confirmImportCSV() {
@@ -101,16 +102,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function exportCSV() {
         fetch('action/export-clients.php')
-            .then(response => response.blob())
-            .then(blob => {
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'clients.csv';
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-            });
+        .then(response => response.blob())
+        .then(blob => {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'clients.csv';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        });
     }
 
     function filterClients() {
@@ -175,30 +176,39 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function fetchClients() {
         fetch('action/get-client-data.php')
-            .then(response => response.json())
-            .then(data => {
-                const tbody = document.getElementById('clients-tbody');
-                tbody.innerHTML = '';
-                if (data.length > 0) {
-                    data.forEach(client => {
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td>${client.numeros_parma}</td>
-                            <td>${client.nom_client}</td>
-                            <td class="montant-du">${formatCurrency(client.montant_du)}</td>
-                        `;
-                        row.addEventListener('click', () => window.location.href = `client.php?id=${client.id}`);
-                        tbody.appendChild(row);
-                    });
-                } else {
-                    tbody.innerHTML = '<tr><td colspan="3">Aucun client trouvé</td></tr>';
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching data:', error);
-                const tbody = document.getElementById('clients-tbody');
-                tbody.innerHTML = '<tr><td colspan="3">Erreur lors de la récupération des données</td></tr>';
-            });
+        .then(response => response.json())
+        .then(data => {
+            const tbody = document.getElementById('clients-tbody');
+            const totalImpayesElement = document.getElementById('total-impayes-value');
+
+            tbody.innerHTML = '';
+            if (data.clients.length > 0) {
+                data.clients.forEach(client => {
+                    const montantDu = parseFloat(client.montant_du) || 0;
+
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                    <td>${client.numeros_parma}</td>
+                    <td>${client.nom_client}</td>
+                    <td class="nb-factures-non-payees" style="text-align: center;">${client.nb_factures_non_payees}</td>
+                    <td class="montant-du" style="text-align: right;">${formatCurrency(montantDu)}</td>
+                    `;
+                    row.addEventListener('click', () => window.location.href = `client.php?id=${client.id}`);
+                    tbody.appendChild(row);
+                });
+
+                totalImpayesElement.textContent = formatCurrency(data.totalImpayes);
+            } else {
+                tbody.innerHTML = '<tr><td colspan="4">Aucun client trouvé</td></tr>';
+                totalImpayesElement.textContent = '0 €';
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching data:', error);
+            const tbody = document.getElementById('clients-tbody');
+            tbody.innerHTML = '<tr><td colspan="4">Erreur lors de la récupération des données</td></tr>';
+            totalImpayesElement.textContent = '0 €';
+        });
     }
 
     function showAlert(message, type = 'danger') {
@@ -251,7 +261,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const columnIdx = {
             'numeros_parma': 0,
             'nom_client': 1,
-            'montant_du': 2
+            'nb_factures_non_payees': 2,
+            'montant_du': 3
         }[column];
 
         const direction = sortDirection[column] ? 1 : -1;
@@ -261,7 +272,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const aText = a.cells[columnIdx].textContent.replace('€', '').replace(/\s/g, '');
             const bText = b.cells[columnIdx].textContent.replace('€', '').replace(/\s/g, '');
 
-            if (column === 'montant_du') {
+            if (column === 'montant_du' || column === 'nb_factures_non_payees') {
                 return (parseFloat(aText) - parseFloat(bText)) * direction;
             }
             return aText.localeCompare(bText) * direction;

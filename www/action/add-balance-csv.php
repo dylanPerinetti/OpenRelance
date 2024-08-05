@@ -3,7 +3,7 @@ session_start();
 include '../connexion/mysql-db-config.php';
 
 $user_id = htmlspecialchars($_SESSION['user_id'], ENT_QUOTES, 'UTF-8');
-$admin_user_id = 1; // L'utilisateur avec l'ID 1 pour les commentaires par défaut
+$admin_user_id = 3; // L'utilisateur avec l'ID 3 pour les commentaires par défaut
 
 $readConn = get_db_connection('read'); // Connexion pour la lecture
 $addConn = get_db_connection('add'); // Connexion pour l'ajout
@@ -23,12 +23,13 @@ try {
         $existingClients[strtoupper($row['nom_client'])] = $row['id'];
     }
 
-    // Récupérer toutes les factures existantes
+    // Récupérer toutes les factures existantes, classées par client
     $existingFactures = [];
-    $stmt = $readConn->prepare("SELECT id, numeros_de_facture, montant_facture, montant_reste_a_payer FROM factures");
+    $stmt = $readConn->prepare("SELECT id, numeros_de_facture, montant_facture, montant_reste_a_payer, id_clients FROM factures");
     $stmt->execute();
     foreach ($stmt as $row) {
-        $existingFactures[$row['numeros_de_facture']] = [
+        $client_id = $row['id_clients'];
+        $existingFactures[$client_id][$row['numeros_de_facture']] = [
             'id' => $row['id'],
             'montant_facture' => $row['montant_facture'],
             'montant_reste_a_payer' => $row['montant_reste_a_payer']
@@ -66,10 +67,23 @@ try {
         $importedFactures[$reference] = $amount;
 
         // Vérifier si la facture existe déjà
-        if (isset($existingFactures[$reference])) {
-            $factureId = $existingFactures[$reference]['id'];
+        $factureExists = false;
+        if (isset($existingFactures[$clientId][$reference])) {
+            $factureExists = true;
+            $factureId = $existingFactures[$clientId][$reference]['id'];
+        } elseif (strpos($reference, 'ZC') !== 0) {
+            foreach ($existingFactures as $clientFactures) {
+                if (isset($clientFactures[$reference])) {
+                    $factureExists = true;
+                    $factureId = $clientFactures[$reference]['id'];
+                    break;
+                }
+            }
+        }
+
+        if ($factureExists) {
             // Mettre à jour le montant restant à payer si la facture est présente dans la balance importée
-            if ($existingFactures[$reference]['montant_reste_a_payer'] != $amount) {
+            if ($existingFactures[$clientId][$reference]['montant_reste_a_payer'] != $amount) {
                 $stmtUpdateFacture->execute([
                     ':montant_reste_a_payer' => $amount,
                     ':id' => $factureId
@@ -96,7 +110,7 @@ try {
                 ':id_user_open_relance' => $user_id
             ]);
             $factureId = $addConn->lastInsertId();
-            $existingFactures[$reference] = [
+            $existingFactures[$clientId][$reference] = [
                 'id' => $factureId,
                 'montant_facture' => $amount,
                 'montant_reste_a_payer' => $amount
@@ -105,21 +119,23 @@ try {
     }
 
     // Mettre à jour les factures non présentes dans la balance importée
-    foreach ($existingFactures as $reference => $facture) {
-        if (!isset($importedFactures[$reference]) && $facture['montant_reste_a_payer'] != 0) {
-            $stmtUpdateFacture->execute([
-                ':montant_reste_a_payer' => 0,
-                ':id' => $facture['id']
-            ]);
-            $stmtInsertCommentaire->execute([
-                ':message_commentaire' => "Facture payée",
-                ':id_user_open_relance' => $admin_user_id
-            ]);
-            $commentaireId = $addConn->lastInsertId();
-            $stmtLinkCommentaireFacture->execute([
-                ':id_commentaire' => $commentaireId,
-                ':id_facture' => $facture['id']
-            ]);
+    foreach ($existingFactures as $clientFactures) {
+        foreach ($clientFactures as $reference => $facture) {
+            if (!isset($importedFactures[$reference]) && $facture['montant_reste_a_payer'] != 0) {
+                $stmtUpdateFacture->execute([
+                    ':montant_reste_a_payer' => 0,
+                    ':id' => $facture['id']
+                ]);
+                $stmtInsertCommentaire->execute([
+                    ':message_commentaire' => "Facture payée",
+                    ':id_user_open_relance' => $admin_user_id
+                ]);
+                $commentaireId = $addConn->lastInsertId();
+                $stmtLinkCommentaireFacture->execute([
+                    ':id_commentaire' => $commentaireId,
+                    ':id_facture' => $facture['id']
+                ]);
+            }
         }
     }
 
